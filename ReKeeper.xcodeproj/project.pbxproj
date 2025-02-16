@@ -29,9 +29,22 @@
 		3482D4312D4E0C410050E72C /* ReKeeperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReKeeperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3431835B2D61D3CB0096BD9E /* Exceptions for "ReKeeper" folder in "ReKeeper" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 3482D4162D4E0C3D0050E72C /* ReKeeper */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		3482D4192D4E0C3E0050E72C /* ReKeeper */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3431835B2D61D3CB0096BD9E /* Exceptions for "ReKeeper" folder in "ReKeeper" target */,
+			);
 			path = ReKeeper;
 			sourceTree = "<group>";
 		};
@@ -399,6 +412,7 @@
 				DEVELOPMENT_TEAM = 9KQTUJV8FH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ReKeeper/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -428,6 +442,7 @@
 				DEVELOPMENT_TEAM = 9KQTUJV8FH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ReKeeper/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
