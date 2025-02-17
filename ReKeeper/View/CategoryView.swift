@@ -11,7 +11,7 @@ struct CategoryView: View {
     var placeIndex: Int
     @ObservedObject var viewModel: StorageViewModel
     @State private var isAddPlaceSheetPresented: Bool = false
-
+    
     let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16),
@@ -22,17 +22,21 @@ struct CategoryView: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(viewModel.places[placeIndex].categories.indices, id: \ .self) { categoryIndex in
+                    
+                    let category = viewModel.places[placeIndex].categories[categoryIndex]
+                    
                     NavigationLink(destination: ItemGridView(placeIndex: placeIndex, categoryIndex: categoryIndex, viewModel: viewModel)) {
                         VStack {
-                            Image(systemName: "shoe.fill")
+                            Image(systemName: category.icon)
                                 .resizable()
                                 .scaledToFit()
                                 .foregroundColor(.pink)
                                 .frame(width: 40, height: 40)
-                            Text("Shoe")
+                            Text(category.name)
+                                .foregroundColor(.primary)
                         }
                         .frame(width: 100, height: 100)
-                        .background(Color.white)
+                        .background(Color(.systemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                             
                     }
@@ -71,3 +75,4 @@ struct CategoryView: View {
         }
     }
 }
+
