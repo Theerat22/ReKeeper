@@ -49,6 +49,7 @@ struct ContentView: View {
                         }
                     }
                 }
+                
                 .navigationTitle("ReKeeper")
                 
                 Spacer()
@@ -71,14 +72,17 @@ struct ContentView: View {
                             .font(.system(size: 30, weight: .bold))
                     }
                 }
-                .padding(.bottom, 30)
+                .padding(.top,20)
                 
             }
             .sheet(isPresented: $isAddPlaceSheetPresented) {
                 AddPlaceView(viewModel: viewModel)
                     .cornerRadius(20)
+            
             }
+            
         }
+        
     }
 }
 

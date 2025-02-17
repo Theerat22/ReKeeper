@@ -19,13 +19,29 @@ struct CategoryView: View {
     ]
     
     var body: some View {
-        List {
-            ForEach(viewModel.places[placeIndex].categories.indices, id: \ .self) { categoryIndex in
-                NavigationLink(destination: ItemGridView(placeIndex: placeIndex, categoryIndex: categoryIndex, viewModel: viewModel)) {
-                    Text(viewModel.places[placeIndex].categories[categoryIndex].name)
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 16) {
+                ForEach(viewModel.places[placeIndex].categories.indices, id: \ .self) { categoryIndex in
+                    NavigationLink(destination: ItemGridView(placeIndex: placeIndex, categoryIndex: categoryIndex, viewModel: viewModel)) {
+                        VStack {
+                            Image(systemName: "shoe.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .foregroundColor(.pink)
+                                .frame(width: 40, height: 40)
+                            Text("Shoe")
+                        }
+                        .frame(width: 100, height: 100)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                            
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
+            .padding(.top,20)
         }
+        .background(Color(.systemGroupedBackground))
         
         
         .navigationTitle(viewModel.places[placeIndex].name)
@@ -48,7 +64,7 @@ struct CategoryView: View {
                     .font(.system(size: 30, weight: .bold))
             }
         }
-        .padding(.bottom, 30)
+        .padding(.top,20)
         .sheet(isPresented: $isAddPlaceSheetPresented) {
             AddCategoryView(viewModel: viewModel, placeIndex: placeIndex)
                 .cornerRadius(20)

@@ -10,9 +10,9 @@ import SwiftUI
 struct AddPlaceView: View {
     @StateObject var viewModel = StorageViewModel()
     @State var placeName = ""
-    @State var selectedIcon = "house.fill"
-    @State var selectedCategory = "Room"
-    @State private var searchText = ""
+    @State private var selectedIcon = "house.fill"
+    @State private var selectedCategory = "Room"
+
     @Environment(\.dismiss) var dismiss
     
     let iconCategories: [(category: String, icons: [String])] = [
@@ -32,6 +32,7 @@ struct AddPlaceView: View {
     var filteredIcons: [String] {
         return iconCategories.first(where: { $0.category == selectedCategory })?.icons ?? []
     }
+    
     var body : some View {
         NavigationStack{
             List {
@@ -43,9 +44,6 @@ struct AddPlaceView: View {
                 }
                 LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(filteredIcons, id: \.self) { iconName in
-                        Button(action: {
-                            selectedIcon = iconName
-                        }) {
                             VStack {
                                 Image(systemName: iconName)
                                     .resizable()
@@ -56,9 +54,12 @@ struct AddPlaceView: View {
                                     .background(selectedIcon == iconName ? Color.pink.opacity(0.2) : Color.clear)
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
+                            .onTapGesture {
+                                selectedIcon = iconName
+                            }
                         }
-                    }
                 }
+                
             
                 .navigationTitle("Add Place")
                 .navigationBarTitleDisplayMode(.inline)
