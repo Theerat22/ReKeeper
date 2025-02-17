@@ -9,8 +9,8 @@ import SwiftUI
 
 struct AddPlaceView: View {
     @StateObject var viewModel = StorageViewModel()
-    
     @State var placeName = ""
+    @Environment(\.dismiss) var dismiss
     
     var body : some View {
         NavigationStack{
@@ -20,10 +20,21 @@ struct AddPlaceView: View {
             .navigationTitle("Add Place")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar{
-                ToolbarItem{
-                    Button("Add"){
-                        viewModel.addPlace(name: placeName)
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
                     }
+                    .foregroundColor(.red)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing){
+                    Button("Add"){
+                        if !placeName.isEmpty {
+                            viewModel.addPlace(name: placeName)
+                            dismiss()
+                        }
+                    }
+                    .disabled(placeName.isEmpty)
                 }
             }
         }

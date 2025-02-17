@@ -10,6 +10,7 @@ import SwiftUI
 struct CategoryView: View {
     var placeIndex: Int
     @ObservedObject var viewModel: StorageViewModel
+    @State private var isAddPlaceSheetPresented: Bool = false
     
     var body: some View {
         List {
@@ -19,11 +20,28 @@ struct CategoryView: View {
                 }
             }
         }
+        
+        
         .navigationTitle(viewModel.places[placeIndex].name)
-        .toolbar {
-            Button("+") {
-                viewModel.addCategory(to: placeIndex, name: "New Category")
+        
+        Button(action: {
+            isAddPlaceSheetPresented.toggle()
+        }) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(gradient: Gradient(colors: [Color.pink, Color.purple]),
+                                       startPoint: .topLeading,
+                                       endPoint: .bottomTrailing)
+                    )
+                    .frame(width: 70, height: 70)
+                    .shadow(color: Color.pink.opacity(0.5), radius: 10, x: 0, y: 5)
+                
+                Image(systemName: "plus")
+                    .foregroundColor(.white)
+                    .font(.system(size: 30, weight: .bold))
             }
         }
+        .padding(.bottom, 30)
     }
 }
