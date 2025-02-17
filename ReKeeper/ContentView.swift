@@ -19,7 +19,7 @@ struct ContentView: View {
                         NavigationLink(destination: CategoryView(placeIndex: index, viewModel: viewModel)) {
                             
                             HStack{
-                                Image(systemName: "house.fill")
+                                Image(systemName: viewModel.places[index].icon)
                                     .foregroundColor(.pink)
                                     .font(.title2)
                                 Text(viewModel.places[index].name)

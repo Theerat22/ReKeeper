@@ -12,17 +12,18 @@ import Vision
 
 class StorageViewModel: ObservableObject {
     @Published var places: [Place] = [
-        Place(name: "Living Room", categories: [
+        Place(name: "Living Room", icon:"house.fill",categories: [
             Category(name: "Shoes", items: [])
         ])
     ]
     
-    func addPlace(name: String) {
-        let newPlace = Place(name: name, categories: [])
+    func addPlace(name: String, icon: String) {
+        let newPlace = Place(name: name, icon: icon, categories: [])
         places.append(newPlace)
     }
     
     func addCategory(to placeIndex: Int, name: String) {
+        guard placeIndex < places.count else { return }
         let newCategory = Category(name: name, items: [])
         places[placeIndex].categories.append(newCategory)
     }

@@ -11,6 +11,12 @@ struct CategoryView: View {
     var placeIndex: Int
     @ObservedObject var viewModel: StorageViewModel
     @State private var isAddPlaceSheetPresented: Bool = false
+
+    let columns = [
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
+    ]
     
     var body: some View {
         List {
@@ -43,5 +49,9 @@ struct CategoryView: View {
             }
         }
         .padding(.bottom, 30)
+        .sheet(isPresented: $isAddPlaceSheetPresented) {
+            AddCategoryView(viewModel: viewModel, placeIndex: placeIndex)
+                .cornerRadius(20)
+        }
     }
 }
