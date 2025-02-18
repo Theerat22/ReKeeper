@@ -12,6 +12,9 @@ struct CategoryView: View {
     @ObservedObject var viewModel: StorageViewModel
     @State private var isAddPlaceSheetPresented: Bool = false
     
+    @State private var showDeleteAlert = false
+    @State private var selectedCategoryIndex: Int?
+    
     let columns = [
         GridItem(.flexible(), spacing: 7),
         GridItem(.flexible(), spacing: 7),
@@ -41,6 +44,22 @@ struct CategoryView: View {
                             
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .onLongPressGesture{
+                        selectedCategoryIndex = categoryIndex
+                        showDeleteAlert = true
+                    }
+                }
+                .alert("Delete Category?", isPresented: $showDeleteAlert) {
+                    Button("Cancel", role: .cancel) {}
+                    Button("Delete", role: .destructive) {
+                        if let index = selectedCategoryIndex {
+                            withAnimation {
+                                viewModel.removeCategory(from: placeIndex, at: index)
+                            }
+                        }
+                    }
+                } message: {
+                    Text("Are you sure you want to delete this category?")
                 }
             }
             .padding(.top,20)

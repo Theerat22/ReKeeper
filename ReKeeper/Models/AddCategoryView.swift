@@ -11,18 +11,29 @@ struct AddCategoryView: View {
     @ObservedObject var viewModel: StorageViewModel
     @State var CategoryName = ""
     var placeIndex: Int
-    @State private var selectedIcon = "house.fill"
-    @State private var selectedCategory = "Room"
+    @State private var selectedIcon = "tshirt.fill"
+    @State private var selectedCategory = "Clothing"
     
     @Environment(\.dismiss) var dismiss
     
     let iconCategories: [(category: String, icons: [String])] = [
-        ("Room", ["house.fill"]),
-        ("Living Room", ["sofa.fill"]),
-        ("Bed Room", ["bed.double.fill"]),
-        ("Bath Room", ["shower.fill"]),
-        ("Kitchen", ["frying.pan.fill"])
+        ("Clothing", ["tshirt.fill", "shoe.fill", "handbag.fill", "eyeglasses"]),
+        ("Food", ["carrot.fill", "takeoutbag.and.cup.and.straw.fill", "fork.knife"]),
+        ("Accessories", ["watch.analog", "sparkles", "earbuds"]),
+        ("Gadgets", ["iphone.gen3", "ipad.landscape", "laptopcomputer"]),
+        ("Travel Items", ["suitcase.fill", "airplane", "map.fill"]),
+        ("Office Supplies", ["pencil.and.ruler.fill", "doc.text.fill", "folder.fill"]),
+        ("Entertainment", ["gamecontroller.fill", "headphones", "guitars.fill"]),
+        ("Sports & Fitness", ["dumbbell.fill", "tennisball.fill", "figure.walk"]),
+        ("Pets", ["pawprint.fill", "fish.fill", "teddybear.fill"]),
+        ("Living Room", ["sofa.fill", "tv.fill", "speaker.fill"]),
+        ("Bedroom", ["bed.double.fill", "lamp.fill", "curtains.closed"]),
+        ("Bathroom", ["shower.fill", "bathtub.fill", "toilet.fill"]),
+        ("Kitchen", ["frying.pan.fill", "cup.and.saucer.fill", "refrigerator.fill"]),
+        ("Outdoors", ["tent.fill", "tree.fill", "sun.max.fill"]),
+        ("Tools", ["hammer.fill", "wrench.fill", "screwdriver.fill"])
     ]
+
     let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16),
