@@ -32,16 +32,20 @@ struct AddCategoryView: View {
     var filteredIcons: [String] {
         return iconCategories.first(where: { $0.category == selectedCategory })?.icons ?? []
     }
-
+    
     
     var body : some View {
         NavigationStack{
             List{
                 TextField("Category Name", text: $CategoryName)
-            }
-            
-            LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(filteredIcons, id: \.self) { iconName in
+                Picker("Item Type", selection: $selectedCategory) {
+                    ForEach(iconCategories.map { $0.category }, id: \.self) { category in
+                        Text(category).tag(category)
+                    }
+                }
+                
+                LazyVGrid(columns: columns, spacing: 16) {
+                    ForEach(filteredIcons, id: \.self) { iconName in
                         VStack {
                             Image(systemName: iconName)
                                 .resizable()
@@ -55,26 +59,27 @@ struct AddCategoryView: View {
                         .onTapGesture {
                             selectedIcon = iconName
                         }
-                }
-            }
-            .navigationTitle("Add Category")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar{
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
                     }
-                    .foregroundColor(.red)
                 }
-                
-                ToolbarItem(placement: .navigationBarTrailing){
-                    Button("Add"){
-                        if !CategoryName.isEmpty {
-                            viewModel.addCategory(to: placeIndex, name: CategoryName,icon:selectedIcon)
+                .navigationTitle("Add Category")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar{
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
                             dismiss()
                         }
+                        .foregroundColor(.red)
                     }
-                    .disabled(CategoryName.isEmpty)
+                    
+                    ToolbarItem(placement: .navigationBarTrailing){
+                        Button("Add"){
+                            if !CategoryName.isEmpty {
+                                viewModel.addCategory(to: placeIndex, name: CategoryName,icon:selectedIcon)
+                                dismiss()
+                            }
+                        }
+                        .disabled(CategoryName.isEmpty)
+                    }
                 }
             }
         }

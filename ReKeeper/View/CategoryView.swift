@@ -13,9 +13,9 @@ struct CategoryView: View {
     @State private var isAddPlaceSheetPresented: Bool = false
     
     let columns = [
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
+        GridItem(.flexible(), spacing: 7),
+        GridItem(.flexible(), spacing: 7),
+        GridItem(.flexible(), spacing: 7)
     ]
     
     var body: some View {
