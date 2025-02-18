@@ -11,6 +11,12 @@ struct ContentView: View {
     @StateObject var viewModel = StorageViewModel()
     @State private var isAddPlaceSheetPresented: Bool = false
     
+    func deletePlace(at offsets: IndexSet) {
+        for index in offsets {
+            viewModel.removePlace(at: index)
+        }
+    }
+
     var body: some View {
         NavigationView {
             VStack {
@@ -30,6 +36,7 @@ struct ContentView: View {
                         }
                         .padding()
                     }
+                    .onDelete(perform: deletePlace)
                 }
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {

@@ -58,6 +58,28 @@ class StorageViewModel: ObservableObject {
         saveData()
     }
     
+    func removePlace(at index: Int) {
+        guard index < places.count else { return }
+        places.remove(at: index)
+        saveData()
+    }
+
+    func removeCategory(from placeIndex: Int, at categoryIndex: Int) {
+        guard placeIndex < places.count, categoryIndex < places[placeIndex].categories.count else { return }
+        places[placeIndex].categories.remove(at: categoryIndex)
+        saveData()
+    }
+
+    func removeItem(from categoryIndex: Int, in placeIndex: Int, at itemIndex: Int) {
+        guard placeIndex < places.count, categoryIndex < places[placeIndex].categories.count, itemIndex < places[placeIndex].categories[categoryIndex].items.count else { return }
+        places[placeIndex].categories[categoryIndex].items.remove(at: itemIndex)
+        saveData()
+    }
+
+    
+    
+    
+    
 //    func findSimilarItem(image: UIImage) -> Item? {
 //            for place in places {
 //                for category in place.categories {
