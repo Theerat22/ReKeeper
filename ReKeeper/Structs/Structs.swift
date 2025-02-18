@@ -24,9 +24,11 @@ struct Category: Identifiable, Codable{
     var items : [Item]
 }
 
-struct Item: Identifiable, Codable{
+struct Item: Identifiable, Codable {
     var id = UUID()
-    var name : String
+    var name: String
+    var receivedDate: Date
+    var expiryDate: Date
+    var imageData: Data?  // To hold image data if needed
 }
-
 

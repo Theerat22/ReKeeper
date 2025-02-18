@@ -52,8 +52,8 @@ class StorageViewModel: ObservableObject {
         saveData()
     }
     
-    func addItem(to categoryIndex: Int, in placeIndex: Int, name: String) {
-        let newItem = Item(name: name)
+    func addItem(to categoryIndex: Int, in placeIndex: Int, name: String, receivedDate: Date, expiryDate: Date, imageData: Data?) {
+        let newItem = Item(name: name, receivedDate: receivedDate, expiryDate: expiryDate, imageData: imageData)
         places[placeIndex].categories[categoryIndex].items.append(newItem)
         saveData()
     }

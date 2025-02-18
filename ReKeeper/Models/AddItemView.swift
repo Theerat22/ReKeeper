@@ -178,7 +178,17 @@ struct ItemDetailView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Add") {
                         if !inputName.isEmpty {
-                            viewModel.addItem(to: categoryIndex, in: placeIndex, name: inputName)
+                            let imageData = selectedImage?.jpegData(compressionQuality: 0.8)
+                            
+                            viewModel.addItem(
+                                to: categoryIndex,
+                                in: placeIndex,
+                                name: inputName,
+                                receivedDate: receivedDate,
+                                expiryDate: expiryDate,
+                                imageData: imageData
+                            )
+                            
                             dismiss()
                         }
                     }
