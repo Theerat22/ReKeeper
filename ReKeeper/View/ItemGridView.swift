@@ -4,66 +4,78 @@
 ////
 ////  Created by Theeratdolchat Chatchai on 16/2/2568 BE.
 ////
-//
+
 import SwiftUI
 import PhotosUI
 
 struct ItemGridView: View {
     var placeIndex: Int
     var categoryIndex: Int
-    @ObservedObject var viewModel: StorageViewModel
+    
     @State private var isShowingPhotoPicker = false
     @State private var isAddPlaceSheetPresented: Bool = false
     
     @State private var inputImage: UIImage?
     @State private var newItemName = ""
     
+    @ObservedObject var viewModel: StorageViewModel
+
+    var sortedItems: [Item] {
+        viewModel.places[placeIndex].categories[categoryIndex].items.sorted {
+            $0.receivedDate < $1.receivedDate
+        }
+    }
+
     let columns = [
-        GridItem(.flexible(), spacing: 7),
-        GridItem(.flexible(), spacing: 7),
-        GridItem(.flexible(), spacing: 7)
+            GridItem(.flexible(), spacing: 7),
+            GridItem(.flexible(), spacing: 7),
+            GridItem(.flexible(), spacing: 7)
     ]
     
     var body: some View {
         ScrollView {
-            VStack {
-//                LazyVGrid(columns: columns, spacing: 16) {
-//                    ForEach(viewModel.places[placeIndex].categories[categoryIndex].items, id: \.self) { item in
-//                        NavigationLink(destination: ItemDetailView(item: item, placeIndex: placeIndex, categoryIndex: categoryIndex)) {
-//                            ItemView(item: item)
-//                        }
-//                    }
-//                }
-                Text("hello")
-                .padding()
-                .navigationTitle(viewModel.places[placeIndex].categories[categoryIndex].name)
-                
-                Spacer()
-                
-                AddButton(isPresented: $isAddPlaceSheetPresented)
-            }
-        }
-        .sheet(isPresented: $isAddPlaceSheetPresented) {
-            AddItemView(viewModel: viewModel, placeIndex: placeIndex, categoryIndex: categoryIndex)
-                .cornerRadius(20)
-        }
-    }
-    
-}
+            LazyVGrid(columns: columns, spacing: 16) {
+                ForEach(sortedItems.indices, id: \.self) { index in
+                    let item = sortedItems[index]
 
-struct ItemView: View {
-    var item: Item
-    var body: some View {
-        VStack {
-            Text(item.name)
-                .font(.caption)
-                .foregroundColor(.primary)
-                .lineLimit(1)
+                    VStack {
+                        if let imageData = item.imageData, let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 70, height: 70)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                        } else {
+                            Image(systemName: "photo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(.gray)
+                        }
+
+                        Text(item.name)
+                            .font(.caption)
+                            .foregroundColor(.primary)
+                    }
+                    .frame(width: 100, height: 70)
+                    .background(Color(.systemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+//                    .shadow(radius: 2)
+                }
+            }
+            .padding()
+            .sheet(isPresented: $isAddPlaceSheetPresented) {
+                AddItemView(viewModel: viewModel, placeIndex: placeIndex, categoryIndex: categoryIndex)
+                    .cornerRadius(20)
+            }
+
         }
-        .frame(width: 140, height: 140)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .navigationTitle("Items in \(viewModel.places[placeIndex].categories[categoryIndex].name)")
+        
+        Spacer()
+        AddButton(isPresented: $isAddPlaceSheetPresented)
     }
+
 }
 
 struct AddButton: View {
@@ -90,4 +102,3 @@ struct AddButton: View {
         }
     }
 }
-

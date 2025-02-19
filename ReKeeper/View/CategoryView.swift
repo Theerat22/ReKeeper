@@ -24,50 +24,52 @@ struct CategoryView: View {
     var body: some View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(viewModel.places[placeIndex].categories.indices, id: \ .self) { categoryIndex in
-                    
-                    let category = viewModel.places[placeIndex].categories[categoryIndex]
-                    
-                    NavigationLink(destination: ItemGridView(placeIndex: placeIndex, categoryIndex: categoryIndex, viewModel: viewModel)) {
-                        VStack {
-                            Image(systemName: category.icon)
-                                .resizable()
-                                .scaledToFit()
-                                .foregroundColor(.pink)
-                                .frame(width: 40, height: 40)
-                            Text(category.name)
-                                .foregroundColor(.primary)
+                if let categories = getCategories() {
+                    ForEach(categories.indices, id: \.self) { categoryIndex in
+                        let category = categories[categoryIndex]
+                        
+                        NavigationLink(destination: ItemGridView(placeIndex: placeIndex, categoryIndex: categoryIndex, viewModel: viewModel)) {
+                            VStack {
+                                Image(systemName: category.icon)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .foregroundColor(.pink)
+                                    .frame(width: 40, height: 40)
+                                Text(category.name)
+                                    .foregroundColor(.primary)
+                            }
+                            .frame(width: 100, height: 100)
+                            .background(Color(.systemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
                         }
-                        .frame(width: 100, height: 100)
-                        .background(Color(.systemBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                            
+                        .buttonStyle(PlainButtonStyle())
+                        .onLongPressGesture {
+                            selectedCategoryIndex = categoryIndex
+                            showDeleteAlert = true
+                        }
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    .onLongPressGesture{
-                        selectedCategoryIndex = categoryIndex
-                        showDeleteAlert = true
-                    }
-                }
-                .alert("Delete Category?", isPresented: $showDeleteAlert) {
-                    Button("Cancel", role: .cancel) {}
-                    Button("Delete", role: .destructive) {
-                        if let index = selectedCategoryIndex {
-                            withAnimation {
-                                viewModel.removeCategory(from: placeIndex, at: index)
+                    .alert("Delete Category?", isPresented: $showDeleteAlert) {
+                        Button("Cancel", role: .cancel) {}
+                        Button("Delete", role: .destructive) {
+                            if let index = selectedCategoryIndex {
+                                withAnimation {
+                                    viewModel.removeCategory(from: placeIndex, at: index)
+                                }
                             }
                         }
+                    } message: {
+                        Text("Are you sure you want to delete this category?")
                     }
-                } message: {
-                    Text("Are you sure you want to delete this category?")
+                } else {
+                    Text("No categories available")
+                        .foregroundColor(.gray)
+                        .padding()
                 }
             }
-            .padding(.top,20)
+            .padding(.top, 20)
         }
         .background(Color(.systemGroupedBackground))
-        
-        
-        .navigationTitle(viewModel.places[placeIndex].name)
+        .navigationTitle(getPlaceName())
         
         Button(action: {
             isAddPlaceSheetPresented.toggle()
@@ -87,11 +89,21 @@ struct CategoryView: View {
                     .font(.system(size: 30, weight: .bold))
             }
         }
-        .padding(.top,20)
+        .padding(.top, 20)
         .sheet(isPresented: $isAddPlaceSheetPresented) {
             AddCategoryView(viewModel: viewModel, placeIndex: placeIndex)
                 .cornerRadius(20)
         }
+    }
+    
+    private func getCategories() -> [Category]? {
+        guard viewModel.places.indices.contains(placeIndex) else { return nil }
+        return viewModel.places[placeIndex].categories
+    }
+    
+    private func getPlaceName() -> String {
+        guard viewModel.places.indices.contains(placeIndex) else { return "Unknown Place" }
+        return viewModel.places[placeIndex].name
     }
 }
 

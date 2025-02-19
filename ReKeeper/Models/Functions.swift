@@ -12,8 +12,12 @@ import Vision
 
 class StorageViewModel: ObservableObject {
     @Published var places: [Place] = [
-        Place(name: "Living Room", icon:"house.fill",categories: [
-            Category(name: "Shoes",icon: "shoe.fill", items: [])
+        Place(name: "Living Room", icon: "house.fill", categories: [
+            Category(name: "Shoes", icon: "shoe.fill", items: [
+                Item(name: "Nike Sneakers", receivedDate: Date().addingTimeInterval(-86400), expiryDate: Date().addingTimeInterval(604800), imageData: nil),
+                Item(name: "Adidas Running", receivedDate: Date().addingTimeInterval(-43200), expiryDate: Date().addingTimeInterval(1209600), imageData: nil),
+                Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil)
+            ])
         ])
     ]
     
