@@ -10,13 +10,19 @@ import PhotosUI
 import CoreML
 import Vision
 
+//let model = try? VNCoreMLModel(for: ResNet50().model)
+
+
 class StorageViewModel: ObservableObject {
     @Published var places: [Place] = [
         Place(name: "Living Room", icon: "house.fill", categories: [
             Category(name: "Shoes", icon: "shoe.fill", items: [
                 Item(name: "Nike Sneakers", receivedDate: Date().addingTimeInterval(-86400), expiryDate: Date().addingTimeInterval(604800), imageData: nil),
                 Item(name: "Adidas Running", receivedDate: Date().addingTimeInterval(-43200), expiryDate: Date().addingTimeInterval(1209600), imageData: nil),
-                Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil)
+                Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
+                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
+                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil)
+
             ])
         ])
     ]
@@ -79,49 +85,80 @@ class StorageViewModel: ObservableObject {
         places[placeIndex].categories[categoryIndex].items.remove(at: itemIndex)
         saveData()
     }
+    
+    
+    func findSimilarItem(image: UIImage) -> Item? {
+            guard let queryFeature = extractFeature(from: image) else { return nil }
+            
+            var mostSimilarItem: Item?
+            var highestSimilarity: Float = -1.0
 
-    
-    
-    
-    
-//    func findSimilarItem(image: UIImage) -> Item? {
-//            for place in places {
-//                for category in place.categories {
-//                    for item in category.items {
-//                        if compareImages(image1: image, image2: item.image) {
-//                            return item
-//                        }
-//                    }
-//                }
-//            }
-//            return nil
-//        }
-//        
-//    private func compareImages(image1: UIImage, image2: UIImage) -> Bool {
-//        guard let model = try? VNCoreMLModel(for: MobileNetV2(configuration: MLModelConfiguration()).model) else {
-//            print("Failed to load MobileNetV2 model")
-//            return false
-//        }
-//        
-//        let request = VNCoreMLRequest(model: model) { request, error in
-//            guard let results = request.results as? [VNClassificationObservation] else { return }
-//            print("Classification Results: \(results)")
-//        }
-//        
-//        guard let cgImage1 = image1.cgImage, let cgImage2 = image2.cgImage else { return false }
-//        
-//        let handler1 = VNImageRequestHandler(cgImage: cgImage1)
-//        let handler2 = VNImageRequestHandler(cgImage: cgImage2)
-//        
-//        do {
-//            try handler1.perform([request])
-//            try handler2.perform([request])
-//        } catch {
-//            print("Error performing image comparison: \(error)")
-//            return false
-//        }
-//        
-//        return true
-//    }
+            for place in places {
+                for category in place.categories {
+                    for item in category.items {
+                        if let imageData = item.imageData,
+                           let storedImage = UIImage(data: imageData),
+                           let itemFeature = extractFeature(from: storedImage) {
 
+                            let similarity = cosineSimilarity(feature1: queryFeature, feature2: itemFeature)
+                            if similarity > highestSimilarity {
+                                highestSimilarity = similarity
+                                mostSimilarItem = item
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return mostSimilarItem
+        }
+
+        private func extractFeature(from image: UIImage) -> [Float]? {
+            guard let model = try? VNCoreMLModel(for: MobileNetV2(configuration: MLModelConfiguration()).model),
+                  let cgImage = image.cgImage else {
+                print("Failed to load MobileNetV2 model or image.")
+                return nil
+            }
+
+            let request = VNCoreMLRequest(model: model) { request, error in
+                if let error = error {
+                    print("Error performing feature extraction: \(error)")
+                    return
+                }
+            }
+
+            let handler = VNImageRequestHandler(cgImage: cgImage)
+
+            do {
+                try handler.perform([request])
+                guard let result = request.results?.first as? VNFeaturePrintObservation else {
+                    print("No feature print observation found.")
+                    return nil
+                }
+
+                return result.featureDataToArray()
+            } catch {
+                print("Error extracting features: \(error)")
+                return nil
+            }
+        }
+
+        private func cosineSimilarity(feature1: [Float], feature2: [Float]) -> Float {
+            guard feature1.count == feature2.count else { return -1 }
+
+            let dotProduct = zip(feature1, feature2).reduce(0) { $0 + $1.0 * $1.1 }
+            let magnitude1 = sqrt(feature1.reduce(0) { $0 + $1 * $1 })
+            let magnitude2 = sqrt(feature2.reduce(0) { $0 + $1 * $1 })
+
+            return dotProduct / (magnitude1 * magnitude2)
+        }
+}
+
+extension VNFeaturePrintObservation {
+    func featureDataToArray() -> [Float] {
+        let count = self.data.count / MemoryLayout<Float>.stride
+        return self.data.withUnsafeBytes { pointer in
+            Array(pointer.bindMemory(to: Float.self).prefix(count))
+        }
+    }
 }

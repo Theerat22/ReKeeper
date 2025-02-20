@@ -12,8 +12,11 @@ struct ItemGridView: View {
     var placeIndex: Int
     var categoryIndex: Int
     
+    @Environment(\.dismiss) var dismiss
+    
     @State private var isShowingPhotoPicker = false
     @State private var isAddPlaceSheetPresented: Bool = false
+    @State private var selectedItem: Item?
     
     @State private var inputImage: UIImage?
     @State private var newItemName = ""
@@ -27,9 +30,9 @@ struct ItemGridView: View {
     }
 
     let columns = [
-            GridItem(.flexible(), spacing: 7),
-            GridItem(.flexible(), spacing: 7),
-            GridItem(.flexible(), spacing: 7)
+        GridItem(.flexible(), spacing: 7),
+        GridItem(.flexible(), spacing: 7),
+        GridItem(.flexible(), spacing: 7)
     ]
     
     var body: some View {
@@ -37,30 +40,24 @@ struct ItemGridView: View {
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(sortedItems.indices, id: \.self) { index in
                     let item = sortedItems[index]
-
+                    
                     VStack {
-                        if let imageData = item.imageData, let uiImage = UIImage(data: imageData) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 70, height: 70)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                        } else {
-                            Image(systemName: "photo")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 50, height: 50)
-                                .foregroundColor(.gray)
-                        }
-
+                        Image("Test")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 100)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    
                         Text(item.name)
                             .font(.caption)
                             .foregroundColor(.primary)
                     }
-                    .frame(width: 100, height: 70)
+                    .frame(width: 130, height: 150)
                     .background(Color(.systemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 10))
-//                    .shadow(radius: 2)
+                    .onTapGesture {
+                        selectedItem = item
+                    }
                 }
             }
             .padding()
@@ -68,15 +65,90 @@ struct ItemGridView: View {
                 AddItemView(viewModel: viewModel, placeIndex: placeIndex, categoryIndex: categoryIndex)
                     .cornerRadius(20)
             }
-
+            .sheet(item: $selectedItem) { item in
+                ItemView(item: item, viewModel: viewModel, placeIndex: placeIndex, categoryIndex: categoryIndex)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
+            }
         }
-        .navigationTitle("Items in \(viewModel.places[placeIndex].categories[categoryIndex].name)")
+        .navigationTitle(viewModel.places[placeIndex].categories[categoryIndex].name)
         
         Spacer()
         AddButton(isPresented: $isAddPlaceSheetPresented)
     }
-
 }
+
+struct ItemView: View {
+    @State private var isEditing = false
+    @State private var editedName: String
+    
+    var item: Item
+    @ObservedObject var viewModel: StorageViewModel
+    var placeIndex: Int
+    var categoryIndex: Int
+    
+    init(item: Item, viewModel: StorageViewModel, placeIndex: Int, categoryIndex: Int) {
+        self.item = item
+        self.viewModel = viewModel
+        self.placeIndex = placeIndex
+        self.categoryIndex = categoryIndex
+        _editedName = State(initialValue: item.name)
+    }
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Spacer()
+                Button(action: {
+                    if isEditing {
+                        updateItemName()
+                    }
+                    isEditing.toggle()
+                }) {
+                    Image(systemName: isEditing ? "checkmark" : "pencil")
+                        .foregroundColor(.blue)
+                        .padding()
+                }
+            }
+            
+            Image("Test")
+                .resizable()
+                .scaledToFit()
+                .frame(height: 200)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .padding()
+            
+            if isEditing {
+                TextField("Item Name", text: $editedName)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
+            } else {
+                Text(item.name)
+                    .font(.title)
+                    .padding()
+            }
+            
+            Text("Received Date: \(item.receivedDate, formatter: itemFormatter)")
+                .font(.body)
+                .foregroundColor(.gray)
+                .padding(.bottom)
+        }
+        .padding()
+    }
+    
+    func updateItemName() {
+        if let itemIndex = viewModel.places[placeIndex].categories[categoryIndex].items.firstIndex(where: { $0.id == item.id }) {
+            viewModel.objectWillChange.send()
+            viewModel.places[placeIndex].categories[categoryIndex].items[itemIndex].name = editedName
+        }
+    }
+}
+
+private let itemFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    return formatter
+}()
 
 struct AddButton: View {
     @Binding var isPresented: Bool
@@ -93,7 +165,6 @@ struct AddButton: View {
                                        endPoint: .bottomTrailing)
                     )
                     .frame(width: 70, height: 70)
-//                    .shadow(color: Color.pink.opacity(0.5), radius: 10, x: 0, y: 5)
                 
                 Image(systemName: "camera.fill")
                     .foregroundColor(.white)
