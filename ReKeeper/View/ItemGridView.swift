@@ -42,12 +42,19 @@ struct ItemGridView: View {
                     let item = sortedItems[index]
                     
                     VStack {
-                        Image("Test")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 100)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                    
+                        if let imageData = item.imageData, let uiImage = UIImage(data: imageData) {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 100, height: 100)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                        } else {
+                            Image(systemName: "photo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                                .foregroundColor(.gray)
+                        }
                         Text(item.name)
                             .font(.caption)
                             .foregroundColor(.primary)
@@ -111,12 +118,21 @@ struct ItemView: View {
                 }
             }
             
-            Image("Test")
-                .resizable()
-                .scaledToFit()
-                .frame(height: 200)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .padding()
+            if let imageData = item.imageData, let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .padding()
+            } else {
+                Image(systemName: "photo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 100)
+                    .foregroundColor(.gray)
+                    .padding()
+            }
             
             if isEditing {
                 TextField("Item Name", text: $editedName)
