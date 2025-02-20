@@ -10,9 +10,6 @@ import PhotosUI
 import CoreML
 import Vision
 
-//let model = try? VNCoreMLModel(for: ResNet50().model)
-
-
 class StorageViewModel: ObservableObject {
     @Published var places: [Place] = [
         Place(name: "Living Room", icon: "house.fill", categories: [
@@ -22,7 +19,6 @@ class StorageViewModel: ObservableObject {
                 Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
                 Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
                 Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil)
-
             ])
         ])
     ]
@@ -39,6 +35,7 @@ class StorageViewModel: ObservableObject {
             UserDefaults.standard.set(encoded, forKey: storageKey)
         }
     }
+    
     func loadData() {
         if let savedData = UserDefaults.standard.data(forKey: storageKey) {
             let decoder = JSONDecoder()
@@ -47,7 +44,6 @@ class StorageViewModel: ObservableObject {
             }
         }
     }
-    
     
     func addPlace(name: String, icon: String) {
         let newPlace = Place(name: name, icon: icon, categories: [])
@@ -86,72 +82,73 @@ class StorageViewModel: ObservableObject {
         saveData()
     }
     
-    
-    func findSimilarItem(image: UIImage) -> Item? {
-            guard let queryFeature = extractFeature(from: image) else { return nil }
-            
-            var mostSimilarItem: Item?
-            var highestSimilarity: Float = -1.0
+    func findSimilarItem(image: UIImage) async -> Item? {
+        guard let queryFeature = await extractFeature(from: image) else { return nil }
+        
+        var mostSimilarItem: Item?
+        var highestSimilarity: Float = -1.0
 
-            for place in places {
-                for category in place.categories {
-                    for item in category.items {
-                        if let imageData = item.imageData,
-                           let storedImage = UIImage(data: imageData),
-                           let itemFeature = extractFeature(from: storedImage) {
+        for place in places {
+            for category in place.categories {
+                for item in category.items {
+                    if let imageData = item.imageData,
+                       let storedImage = UIImage(data: imageData),
+                       let itemFeature = await extractFeature(from: storedImage) {
 
-                            let similarity = cosineSimilarity(feature1: queryFeature, feature2: itemFeature)
-                            if similarity > highestSimilarity {
-                                highestSimilarity = similarity
-                                mostSimilarItem = item
-                            }
+                        let similarity = cosineSimilarity(feature1: queryFeature, feature2: itemFeature)
+                        if similarity > highestSimilarity {
+                            highestSimilarity = similarity
+                            mostSimilarItem = item
                         }
                     }
                 }
             }
-            
-            return mostSimilarItem
+        }
+        
+        return mostSimilarItem
+    }
+
+    private func extractFeature(from image: UIImage) async -> [Float]? {
+        guard let model = try? VNCoreMLModel(for: MobileNetV2(configuration: MLModelConfiguration()).model),
+              let cgImage = image.cgImage else {
+            print("Failed to load MobileNetV2 model or image.")
+            return nil
         }
 
-        private func extractFeature(from image: UIImage) -> [Float]? {
-            guard let model = try? VNCoreMLModel(for: MobileNetV2(configuration: MLModelConfiguration()).model),
-                  let cgImage = image.cgImage else {
-                print("Failed to load MobileNetV2 model or image.")
-                return nil
+        let request = VNCoreMLRequest(model: model) { request, error in
+            if let error = error {
+                print("Error performing feature extraction: \(error)")
             }
+        }
 
-            let request = VNCoreMLRequest(model: model) { request, error in
-                if let error = error {
-                    print("Error performing feature extraction: \(error)")
-                    return
+        let handler = VNImageRequestHandler(cgImage: cgImage)
+
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    try handler.perform([request]) // Synchronously perform the request
+                    if let result = request.results?.first as? VNFeaturePrintObservation {
+                        continuation.resume(returning: result.featureDataToArray())
+                    } else {
+                        continuation.resume(returning: nil)
+                    }
+                } catch {
+                    print("Error extracting features: \(error)")
+                    continuation.resume(returning: nil)
                 }
             }
-
-            let handler = VNImageRequestHandler(cgImage: cgImage)
-
-            do {
-                try handler.perform([request])
-                guard let result = request.results?.first as? VNFeaturePrintObservation else {
-                    print("No feature print observation found.")
-                    return nil
-                }
-
-                return result.featureDataToArray()
-            } catch {
-                print("Error extracting features: \(error)")
-                return nil
-            }
         }
+    }
 
-        private func cosineSimilarity(feature1: [Float], feature2: [Float]) -> Float {
-            guard feature1.count == feature2.count else { return -1 }
+    private func cosineSimilarity(feature1: [Float], feature2: [Float]) -> Float {
+        guard feature1.count == feature2.count else { return -1 }
 
-            let dotProduct = zip(feature1, feature2).reduce(0) { $0 + $1.0 * $1.1 }
-            let magnitude1 = sqrt(feature1.reduce(0) { $0 + $1 * $1 })
-            let magnitude2 = sqrt(feature2.reduce(0) { $0 + $1 * $1 })
+        let dotProduct = zip(feature1, feature2).reduce(0) { $0 + $1.0 * $1.1 }
+        let magnitude1 = sqrt(feature1.reduce(0) { $0 + $1 * $1 })
+        let magnitude2 = sqrt(feature2.reduce(0) { $0 + $1 * $1 })
 
-            return dotProduct / (magnitude1 * magnitude2)
-        }
+        return dotProduct / (magnitude1 * magnitude2)
+    }
 }
 
 extension VNFeaturePrintObservation {

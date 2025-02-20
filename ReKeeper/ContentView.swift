@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @StateObject var viewModel = StorageViewModel()
     @State private var isAddPlaceSheetPresented: Bool = false
+    @State private var isFindSimilarPresented: Bool = false
     
     func deletePlace(at offsets: IndexSet) {
         for index in offsets {
@@ -41,7 +42,8 @@ struct ContentView: View {
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button(action: {
-                            
+//                            FindSimilar(viewModel: viewModel)
+                            isFindSimilarPresented.toggle()
                         }) {
                             Image(systemName:"camera.metering.partial")
                         }
@@ -55,6 +57,10 @@ struct ContentView: View {
 //                                .foregroundColor(.black)
                         }
                     }
+                }
+                .sheet(isPresented: $isFindSimilarPresented) {
+                    FindSimilar()
+                        .cornerRadius(20)
                 }
                 
                 .navigationTitle("ReKeeper")
@@ -85,7 +91,7 @@ struct ContentView: View {
             .sheet(isPresented: $isAddPlaceSheetPresented) {
                 AddPlaceView(viewModel: viewModel)
                     .cornerRadius(20)
-            
+                
             }
             
         }

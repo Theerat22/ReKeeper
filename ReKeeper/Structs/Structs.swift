@@ -29,6 +29,6 @@ struct Item: Identifiable, Codable {
     var name: String
     var receivedDate: Date
     var expiryDate: Date
-    var imageData: Data?  // To hold image data if needed
+    var imageData: Data?
 }
 
