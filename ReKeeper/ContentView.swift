@@ -11,6 +11,7 @@ struct ContentView: View {
     @StateObject var viewModel = StorageViewModel()
     @State private var isAddPlaceSheetPresented: Bool = false
     @State private var isFindSimilarPresented: Bool = false
+    @State private var isSearchPresented: Bool = false
     
     func deletePlace(at offsets: IndexSet) {
         for index in offsets {
@@ -51,7 +52,7 @@ struct ContentView: View {
                     
                     ToolbarItem(placement: .navigationBarTrailing){
                         Button(action: {
-                            
+                            isSearchPresented.toggle()
                         }) {
                             Image(systemName:"magnifyingglass")
 //                                .foregroundColor(.black)
@@ -61,6 +62,9 @@ struct ContentView: View {
                 .sheet(isPresented: $isFindSimilarPresented) {
                     FindSimilar()
                         .cornerRadius(20)
+                }
+                .sheet(isPresented: $isSearchPresented) {
+                    SearchView(viewModel: viewModel)                        .cornerRadius(20)
                 }
                 
                 .navigationTitle("ReKeeper")
