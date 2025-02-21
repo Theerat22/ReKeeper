@@ -74,25 +74,20 @@ struct AddItemView: View {
                     Button(action: {
                         isConfirmationPresented = true
                     }) {
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(gradient: Gradient(colors: [Color.pink, Color.purple]),
-                                                   startPoint: .topLeading,
-                                                   endPoint: .bottomTrailing)
-                                )
-                                .frame(width: 70, height: 70)
-                            
-                            Image(systemName: "checkmark")
-                                .foregroundColor(.white)
-                                .font(.system(size: 30, weight: .bold))
-                        }
+                            ZStack{
+                                Circle()
+                                    .fill(
+                                        LinearGradient(gradient: Gradient(colors: [Color.pink, Color.purple]),
+                                                       startPoint: .topLeading,
+                                                       endPoint: .bottomTrailing)
+                                    )
+                                    .frame(width: 70, height: 70)
+                                
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 30, weight: .bold))
+                            }
                     }
-                    Button("Cancel") {
-                        selectedImage = nil
-                    }
-                    .foregroundColor(Color.red)
-                    .padding(.top,10)
                 }
                 Spacer()
             }
