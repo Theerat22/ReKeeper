@@ -83,84 +83,74 @@ class StorageViewModel: ObservableObject {
         saveData()
     }
     
+}
+
+extension StorageViewModel {
     func findSimilarItem(image: UIImage) async -> Item? {
-        guard let queryFeatures = await ImageClassifier.shared.extractFeatures(from: image) else {
+        guard let imageFeatureVector = await extractFeatureVector(from: image) else {
+            print("Error extracting feature vector")
             return nil
         }
 
-        var bestMatch: (item: Item, similarity: Float)? = nil
+        var bestMatch: Item?
+        var highestSimilarity: Float = -1
 
-        for place in self.places {
+        for place in places {
             for category in place.categories {
                 for item in category.items {
-                    if let imageData = item.imageData, let itemImage = UIImage(data: imageData) {
-                        if let itemFeatures = await ImageClassifier.shared.extractFeatures(from: itemImage) {
-                            let similarity = self.cosineSimilarity(queryFeatures, itemFeatures)
+                    if let imageData = item.imageData,
+                       let storedImage = UIImage(data: imageData),
+                       let storedFeatureVector = await extractFeatureVector(from: storedImage) {
 
-                            if bestMatch == nil || similarity > bestMatch!.similarity {
-                                bestMatch = (item, similarity)
-                            }
+                        let similarity = cosineSimilarity(v1: imageFeatureVector, v2: storedFeatureVector)
+                        
+                        if similarity > highestSimilarity {
+                            highestSimilarity = similarity
+                            bestMatch = item
                         }
                     }
                 }
             }
         }
-
-        return bestMatch?.item
+        return bestMatch
     }
 
-    private func cosineSimilarity(_ a: [Float], _ b: [Float]) -> Float {
-        let dotProduct = zip(a, b).map(*).reduce(0, +)
-        let magnitudeA = sqrt(a.map { $0 * $0 }.reduce(0, +))
-        let magnitudeB = sqrt(b.map { $0 * $0 }.reduce(0, +))
-        return dotProduct / (magnitudeA * magnitudeB)
+    private func extractFeatureVector(from image: UIImage) async -> [Float]? {
+        guard let cgImage = image.cgImage else { return nil }
+        let request = VNGenerateImageFeaturePrintRequest()
+
+        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+        do {
+            try handler.perform([request])
+            guard let result = request.results?.first as? VNFeaturePrintObservation else { return nil }
+
+            let featureVector = try result.data.toArray()
+
+            return featureVector
+        } catch {
+            print("Feature extraction error: \(error)")
+            return nil
+        }
+    }
+
+    private func cosineSimilarity(v1: [Float], v2: [Float]) -> Float {
+        guard v1.count == v2.count else { return -1 }
+
+        let dotProduct = zip(v1, v2).map(*).reduce(0, +)
+        let magnitude1 = sqrt(v1.map { $0 * $0 }.reduce(0, +))
+        let magnitude2 = sqrt(v2.map { $0 * $0 }.reduce(0, +))
+
+        return dotProduct / (magnitude1 * magnitude2)
     }
 }
 
-
-class ImageClassifier {
-    static let shared = ImageClassifier()
-    
-    func extractFeatures(from image: UIImage) async -> [Float]? {
-        return await withCheckedContinuation { continuation in
-            processImage(image) { features in
-                continuation.resume(returning: features)
+extension Data {
+    func toArray() throws -> [Float] {
+        return try withUnsafeBytes { pointer -> [Float] in
+            guard let base = pointer.baseAddress?.assumingMemoryBound(to: Float.self) else {
+                throw NSError(domain: "DataConversionError", code: 0, userInfo: nil)
             }
+            return Array(UnsafeBufferPointer(start: base, count: count / MemoryLayout<Float>.stride))
         }
-    }
-    
-    private func processImage(_ image: UIImage, completion: @escaping ([Float]?) -> Void) {
-        guard let cgImage = image.cgImage else {
-            completion(nil)
-            return
-        }
-
-        // โหลดโมเดล MobileNetV2.mlmodel
-        guard let modelURL = Bundle.main.url(forResource: "mobilenetv2", withExtension: "mlmodel"),
-              let model = try? VNCoreMLModel(for: MLModel(contentsOf: modelURL)) else {
-            completion(nil)
-            return
-        }
-        
-        let request = VNCoreMLRequest(model: model) { request, error in
-            guard let results = request.results as? [VNCoreMLFeatureValueObservation] else {
-                completion(nil)
-                return
-            }
-            
-            // แปลงผลลัพธ์เป็น array ของ float
-            if let multiArray = results.first?.featureValue.multiArrayValue {
-                var features: [Float] = []
-                for i in 0..<multiArray.count {
-                    features.append(Float(multiArray[i].floatValue))
-                }
-                completion(features)
-            } else {
-                completion(nil)
-            }
-        }
-
-        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-        try? handler.perform([request])
     }
 }

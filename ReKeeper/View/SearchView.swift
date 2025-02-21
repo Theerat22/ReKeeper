@@ -26,7 +26,7 @@ struct SearchView: View {
         NavigationView {
             VStack {
                 TextField("Search item...", text: $searchText)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+//                    .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding()
                 
                 if searchText.isEmpty {

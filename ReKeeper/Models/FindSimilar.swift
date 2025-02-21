@@ -15,9 +15,9 @@ struct FindSimilar: View {
     @StateObject var viewModel = StorageViewModel()
     @State private var capturedImage: UIImage?
     @State private var isImagePickerPresented = false
-    @State private var useCamera = true
     @State private var isScanning = false
     @State private var similarItem: Item?
+    @State private var useCamera = true
     
     @Environment(\.dismiss) var dismiss
 
@@ -59,9 +59,12 @@ struct FindSimilar: View {
                 if capturedImage != nil {
                     Button(action: {
                         isScanning = true
+                        similarItem = nil // ล้างค่าผลลัพธ์ก่อนสแกนใหม่
                         
                         Task {
-                            self.similarItem = await viewModel.findSimilarItem(image: capturedImage!)
+                            if let image = capturedImage {
+                                self.similarItem = await viewModel.findSimilarItem(image: image)
+                            }
                             isScanning = false
                         }
                     }) {
@@ -74,7 +77,7 @@ struct FindSimilar: View {
                                 )
                                 .frame(width: 70, height: 70)
                             
-                            Image(systemName: "plus")
+                            Image(systemName: "magnifyingglass.circle.fill")
                                 .foregroundColor(.white)
                                 .font(.system(size: 30, weight: .bold))
                         }
@@ -83,9 +86,10 @@ struct FindSimilar: View {
                     
                     Button("Cancel") {
                         capturedImage = nil
+                        similarItem = nil
                     }
                     .foregroundColor(Color.red)
-                    .padding(.top,10)
+                    .padding(.top, 10)
                 }
                 
                 if isScanning {
@@ -99,7 +103,7 @@ struct FindSimilar: View {
                     Text("Found similar item: \(item.name)")
                         .font(.headline)
                         .padding()
-                } else if !isScanning {
+                } else if !isScanning && capturedImage != nil {
                     Text("Not Found")
                         .font(.headline)
                         .foregroundColor(.red)
