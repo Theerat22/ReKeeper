@@ -9,20 +9,21 @@ import SwiftUI
 import PhotosUI
 import CoreML
 import Vision
-
+import UIKit
+    
 class StorageViewModel: ObservableObject {
     @Published var places: [Place] = [
-        Place(name: "Living Room", icon: "house.fill", categories: [
-            Category(name: "Shoes", icon: "shoe.fill", items: [
-                Item(name: "Nike Sneakers", receivedDate: Date().addingTimeInterval(-86400), expiryDate: Date().addingTimeInterval(604800), imageData: nil),
-                Item(name: "Adidas Running", receivedDate: Date().addingTimeInterval(-43200), expiryDate: Date().addingTimeInterval(1209600), imageData: nil),
-                Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
-                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
-                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil)
+            Place(name: "Living Room", icon: "house.fill", categories: [
+                Category(name: "Shoes", icon: "shoe.fill", items: [
+                    Item(name: "Nike Sneakers", receivedDate: Date().addingTimeInterval(-86400), expiryDate: Date().addingTimeInterval(604800), imageData: nil),
+                    Item(name: "Adidas Running", receivedDate: Date().addingTimeInterval(-43200), expiryDate: Date().addingTimeInterval(1209600), imageData: nil),
+                    Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
+                    Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
+                    Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil)
+                ])
             ])
-        ])
-    ]
-    
+        ]
+        
     private let storageKey = "places_storage"
     
     init() {
@@ -44,11 +45,11 @@ class StorageViewModel: ObservableObject {
             }
         }
     }
-    
+        
     func addPlace(name: String, icon: String) {
-        let newPlace = Place(name: name, icon: icon, categories: [])
-        places.append(newPlace)
-        saveData()
+            let newPlace = Place(name: name, icon: icon, categories: [])
+            places.append(newPlace)
+            saveData()
     }
     
     func addCategory(to placeIndex: Int, name: String, icon: String) {
@@ -69,11 +70,11 @@ class StorageViewModel: ObservableObject {
         places.remove(at: index)
         saveData()
     }
-
+    
     func removeCategory(from placeIndex: Int, at categoryIndex: Int) {
-        guard placeIndex < places.count, categoryIndex < places[placeIndex].categories.count else { return }
-        places[placeIndex].categories.remove(at: categoryIndex)
-        saveData()
+            guard placeIndex < places.count, categoryIndex < places[placeIndex].categories.count else { return }
+            places[placeIndex].categories.remove(at: categoryIndex)
+            saveData()
     }
 
     func removeItem(from categoryIndex: Int, in placeIndex: Int, at itemIndex: Int) {
@@ -83,79 +84,83 @@ class StorageViewModel: ObservableObject {
     }
     
     func findSimilarItem(image: UIImage) async -> Item? {
-        guard let queryFeature = await extractFeature(from: image) else { return nil }
-        
-        var mostSimilarItem: Item?
-        var highestSimilarity: Float = -1.0
+        guard let queryFeatures = await ImageClassifier.shared.extractFeatures(from: image) else {
+            return nil
+        }
 
-        for place in places {
+        var bestMatch: (item: Item, similarity: Float)? = nil
+
+        for place in self.places {
             for category in place.categories {
                 for item in category.items {
-                    if let imageData = item.imageData,
-                       let storedImage = UIImage(data: imageData),
-                       let itemFeature = await extractFeature(from: storedImage) {
+                    if let imageData = item.imageData, let itemImage = UIImage(data: imageData) {
+                        if let itemFeatures = await ImageClassifier.shared.extractFeatures(from: itemImage) {
+                            let similarity = self.cosineSimilarity(queryFeatures, itemFeatures)
 
-                        let similarity = cosineSimilarity(feature1: queryFeature, feature2: itemFeature)
-                        if similarity > highestSimilarity {
-                            highestSimilarity = similarity
-                            mostSimilarItem = item
+                            if bestMatch == nil || similarity > bestMatch!.similarity {
+                                bestMatch = (item, similarity)
+                            }
                         }
                     }
                 }
             }
         }
-        
-        return mostSimilarItem
+
+        return bestMatch?.item
     }
 
-    private func extractFeature(from image: UIImage) async -> [Float]? {
-        guard let model = try? VNCoreMLModel(for: MobileNetV2(configuration: MLModelConfiguration()).model),
-              let cgImage = image.cgImage else {
-            print("Failed to load MobileNetV2 model or image.")
-            return nil
-        }
-
-        let request = VNCoreMLRequest(model: model) { request, error in
-            if let error = error {
-                print("Error performing feature extraction: \(error)")
-            }
-        }
-
-        let handler = VNImageRequestHandler(cgImage: cgImage)
-
-        return await withCheckedContinuation { continuation in
-            DispatchQueue.global(qos: .userInitiated).async {
-                do {
-                    try handler.perform([request]) // Synchronously perform the request
-                    if let result = request.results?.first as? VNFeaturePrintObservation {
-                        continuation.resume(returning: result.featureDataToArray())
-                    } else {
-                        continuation.resume(returning: nil)
-                    }
-                } catch {
-                    print("Error extracting features: \(error)")
-                    continuation.resume(returning: nil)
-                }
-            }
-        }
-    }
-
-    private func cosineSimilarity(feature1: [Float], feature2: [Float]) -> Float {
-        guard feature1.count == feature2.count else { return -1 }
-
-        let dotProduct = zip(feature1, feature2).reduce(0) { $0 + $1.0 * $1.1 }
-        let magnitude1 = sqrt(feature1.reduce(0) { $0 + $1 * $1 })
-        let magnitude2 = sqrt(feature2.reduce(0) { $0 + $1 * $1 })
-
-        return dotProduct / (magnitude1 * magnitude2)
+    private func cosineSimilarity(_ a: [Float], _ b: [Float]) -> Float {
+        let dotProduct = zip(a, b).map(*).reduce(0, +)
+        let magnitudeA = sqrt(a.map { $0 * $0 }.reduce(0, +))
+        let magnitudeB = sqrt(b.map { $0 * $0 }.reduce(0, +))
+        return dotProduct / (magnitudeA * magnitudeB)
     }
 }
 
-extension VNFeaturePrintObservation {
-    func featureDataToArray() -> [Float] {
-        let count = self.data.count / MemoryLayout<Float>.stride
-        return self.data.withUnsafeBytes { pointer in
-            Array(pointer.bindMemory(to: Float.self).prefix(count))
+
+class ImageClassifier {
+    static let shared = ImageClassifier()
+    
+    func extractFeatures(from image: UIImage) async -> [Float]? {
+        return await withCheckedContinuation { continuation in
+            processImage(image) { features in
+                continuation.resume(returning: features)
+            }
         }
+    }
+    
+    private func processImage(_ image: UIImage, completion: @escaping ([Float]?) -> Void) {
+        guard let cgImage = image.cgImage else {
+            completion(nil)
+            return
+        }
+
+        // โหลดโมเดล MobileNetV2.mlmodel
+        guard let modelURL = Bundle.main.url(forResource: "mobilenetv2", withExtension: "mlmodel"),
+              let model = try? VNCoreMLModel(for: MLModel(contentsOf: modelURL)) else {
+            completion(nil)
+            return
+        }
+        
+        let request = VNCoreMLRequest(model: model) { request, error in
+            guard let results = request.results as? [VNCoreMLFeatureValueObservation] else {
+                completion(nil)
+                return
+            }
+            
+            // แปลงผลลัพธ์เป็น array ของ float
+            if let multiArray = results.first?.featureValue.multiArrayValue {
+                var features: [Float] = []
+                for i in 0..<multiArray.count {
+                    features.append(Float(multiArray[i].floatValue))
+                }
+                completion(features)
+            } else {
+                completion(nil)
+            }
+        }
+
+        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+        try? handler.perform([request])
     }
 }

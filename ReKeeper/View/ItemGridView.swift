@@ -151,13 +151,21 @@ struct ItemView: View {
         }
         .padding()
     }
-    
     func updateItemName() {
         if let itemIndex = viewModel.places[placeIndex].categories[categoryIndex].items.firstIndex(where: { $0.id == item.id }) {
             viewModel.objectWillChange.send()
             viewModel.places[placeIndex].categories[categoryIndex].items[itemIndex].name = editedName
+            viewModel.saveData()
         }
     }
+    
+//    func updateItemName() {
+//        if let itemIndex = viewModel.places[placeIndex].categories[categoryIndex].items.firstIndex(where: { $0.id == item.id }) {
+//            viewModel.objectWillChange.send()
+//            viewModel.places[placeIndex].categories[categoryIndex].items[itemIndex].name = editedName
+//            
+//        }
+//    }
 }
 
 private let itemFormatter: DateFormatter = {

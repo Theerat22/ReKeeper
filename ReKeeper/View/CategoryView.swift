@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+import SwiftUI
+
 struct CategoryView: View {
     var placeIndex: Int
     @ObservedObject var viewModel: StorageViewModel
@@ -25,10 +27,8 @@ struct CategoryView: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
                 if let categories = getCategories() {
-                    ForEach(categories.indices, id: \.self) { categoryIndex in
-                        let category = categories[categoryIndex]
-                        
-                        NavigationLink(destination: ItemGridView(placeIndex: placeIndex, categoryIndex: categoryIndex, viewModel: viewModel)) {
+                    ForEach(categories.enumerated().map({ $0 }), id: \.element.id) { (index, category) in
+                        NavigationLink(destination: ItemGridView(placeIndex: placeIndex, categoryIndex: index, viewModel: viewModel)) {
                             VStack {
                                 Image(systemName: category.icon)
                                     .resizable()
@@ -44,7 +44,7 @@ struct CategoryView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         .onLongPressGesture {
-                            selectedCategoryIndex = categoryIndex
+                            selectedCategoryIndex = index
                             showDeleteAlert = true
                         }
                     }
@@ -106,4 +106,5 @@ struct CategoryView: View {
         return viewModel.places[placeIndex].name
     }
 }
+
 
