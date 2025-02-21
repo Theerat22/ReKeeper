@@ -16,8 +16,7 @@ struct FindSimilar: View {
     @State private var capturedImage: UIImage?
     @State private var isImagePickerPresented = false
     @State private var isScanning = false
-    @State private var similarItem: Item?
-    @State private var useCamera = true
+    @State private var similarItems: [Item] = []
     
     @Environment(\.dismiss) var dismiss
 
@@ -53,17 +52,17 @@ struct FindSimilar: View {
                 }
                 .padding()
                 .sheet(isPresented: $isImagePickerPresented) {
-                    ImagePicker(image: $capturedImage, useCamera: useCamera)
+                    ImagePicker(image: $capturedImage, useCamera: true)
                 }
 
                 if capturedImage != nil {
                     Button(action: {
                         isScanning = true
-                        similarItem = nil // ล้างค่าผลลัพธ์ก่อนสแกนใหม่
+                        similarItems = []
                         
                         Task {
                             if let image = capturedImage {
-                                self.similarItem = await viewModel.findSimilarItem(image: image)
+                                self.similarItems = await viewModel.findSimilarItems(image: image)
                             }
                             isScanning = false
                         }
@@ -86,7 +85,7 @@ struct FindSimilar: View {
                     
                     Button("Cancel") {
                         capturedImage = nil
-                        similarItem = nil
+                        similarItems = []
                     }
                     .foregroundColor(Color.red)
                     .padding(.top, 10)
@@ -99,10 +98,17 @@ struct FindSimilar: View {
                         .padding()
                 }
                 
-                if let item = similarItem {
-                    Text("Found similar item: \(item.name)")
-                        .font(.headline)
-                        .padding()
+                if !similarItems.isEmpty {
+                    VStack {
+                        Text("Found \(similarItems.count) similar items:")
+                            .font(.headline)
+                            .padding()
+                        
+                        ForEach(similarItems, id: \.id) { item in
+                            Text("Item: \(item.name)")
+                                .padding()
+                        }
+                    }
                 } else if !isScanning && capturedImage != nil {
                     Text("Not Found")
                         .font(.headline)

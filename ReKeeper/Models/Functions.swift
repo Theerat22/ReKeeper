@@ -86,14 +86,13 @@ class StorageViewModel: ObservableObject {
 }
 
 extension StorageViewModel {
-    func findSimilarItem(image: UIImage) async -> Item? {
+    func findSimilarItems(image: UIImage) async -> [Item] {
         guard let imageFeatureVector = await extractFeatureVector(from: image) else {
             print("Error extracting feature vector")
-            return nil
+            return []
         }
-
-        var bestMatch: Item?
-        var highestSimilarity: Float = -1
+        
+        var matches: [(item: Item, similarity: Float)] = []
 
         for place in places {
             for category in place.categories {
@@ -103,18 +102,15 @@ extension StorageViewModel {
                        let storedFeatureVector = await extractFeatureVector(from: storedImage) {
 
                         let similarity = cosineSimilarity(v1: imageFeatureVector, v2: storedFeatureVector)
-                        
-                        if similarity > highestSimilarity {
-                            highestSimilarity = similarity
-                            bestMatch = item
-                        }
+                        matches.append((item, similarity))
                     }
                 }
             }
         }
-        return bestMatch
+        return matches.sorted { $0.similarity > $1.similarity }
+                      .prefix(3)
+                      .map { $0.item }
     }
-
     private func extractFeatureVector(from image: UIImage) async -> [Float]? {
         guard let cgImage = image.cgImage else { return nil }
         let request = VNGenerateImageFeaturePrintRequest()
