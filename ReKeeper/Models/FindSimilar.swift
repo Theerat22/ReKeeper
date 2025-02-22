@@ -15,13 +15,14 @@ struct FindSimilar: View {
     @StateObject var viewModel = StorageViewModel()
     @State private var capturedImage: UIImage?
     @State private var isImagePickerPresented = false
+    @State private var isShowingImageSourceOptions = false
     @State private var isScanning = false
     @State private var usedModel = false
+    @State private var useCamera = false
     @State private var similarItems: [(item: Item, rank: Int)] = []
 
-    
     @Environment(\.dismiss) var dismiss
-    
+
     var filteredResults: [(item: Item, placeIndex: Int, categoryIndex: Int, itemIndex: Int, rank: Int)] {
         return viewModel.places.enumerated().flatMap { placeIndex, place in
             place.categories.enumerated().flatMap { categoryIndex, category in
@@ -35,13 +36,12 @@ struct FindSimilar: View {
             }
         }.sorted { $0.rank < $1.rank }
     }
-    
 
     var body: some View {
         NavigationStack {
             VStack {
                 Button(action: {
-                    isImagePickerPresented = true
+                    isShowingImageSourceOptions = true
                 }) {
                     ZStack {
                         if let capturedImage = capturedImage {
@@ -53,7 +53,6 @@ struct FindSimilar: View {
                                 .clipped()
                             
                         } else {
-//                            Spacer()
                             Circle()
                                 .fill(Color.gray.opacity(0.3))
                                 .frame(width: 300, height: 300)
@@ -71,15 +70,26 @@ struct FindSimilar: View {
                     }
                 }
                 .padding()
-                .sheet(isPresented: $isImagePickerPresented) {
-                    ImagePicker(image: $capturedImage, useCamera: true)
+                .confirmationDialog("Choose Image Source", isPresented: $isShowingImageSourceOptions, titleVisibility: .visible) {
+                    Button("Take a Photo") {
+                        useCamera = true
+                        isImagePickerPresented = true
+                    }
+                    Button("Choose from Library") {
+                        useCamera = false
+                        isImagePickerPresented = true
+                    }
+                    Button("Cancel", role: .cancel) {}
                 }
-                
+                .sheet(isPresented: $isImagePickerPresented) {
+                    ImagePickerController(image: $capturedImage, useCamera: useCamera)
+                }
+
                 Button(action: {
                     isScanning = true
                     usedModel = true
                     similarItems = []
-                    
+
                     Task {
                         if let image = capturedImage {
                             self.similarItems = await viewModel.findSimilarItems(image: image)
@@ -106,15 +116,13 @@ struct FindSimilar: View {
                     }
                 }
 
-
-                
                 if isScanning {
                     ProgressView("Scanning...")
                         .progressViewStyle(CircularProgressViewStyle(tint: .blue))
                         .scaleEffect(1.5)
                         .padding()
                 }
-                
+
                 if !filteredResults.isEmpty {
                     List(filteredResults, id: \.item.id) { result in
                         NavigationLink(
@@ -162,7 +170,7 @@ struct FindSimilar: View {
                         .foregroundColor(.red)
                         .padding()
                 }
-                
+
             }
             Spacer()
             .navigationTitle("Find Similar")
@@ -174,49 +182,48 @@ struct FindSimilar: View {
             }
         }
     }
+
     private func formattedDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: date)
     }
-
 }
 
 
-
-
-struct CameraView: UIViewControllerRepresentable {
+struct ImagePickerController: UIViewControllerRepresentable {
     @Binding var image: UIImage?
-    
-    class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-        var parent: CameraView
+    var useCamera: Bool
+
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        var parent: ImagePickerController
         
-        init(parent: CameraView) {
+        init(parent: ImagePickerController) {
             self.parent = parent
         }
-        
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
             if let uiImage = info[.originalImage] as? UIImage {
                 parent.image = uiImage
             }
             picker.dismiss(animated: true)
         }
-        
+
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             picker.dismiss(animated: true)
         }
     }
-    
+
     func makeCoordinator() -> Coordinator {
         return Coordinator(parent: self)
     }
-    
+
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
-        picker.sourceType = .camera
+        picker.sourceType = useCamera ? .camera : .photoLibrary
         picker.delegate = context.coordinator
         return picker
     }
-    
+
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
 }

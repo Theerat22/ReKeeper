@@ -17,29 +17,30 @@ struct NotificationView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                HStack {
-                    if viewModel.streakCounter != 0 {
-                        Image(systemName: "flame.circle.fill")
-                            .foregroundColor(Color.pink)
-                            .font(.system(size: 80, weight: .bold))
-                            .frame(width: 100, height: 120)
-                    } else {
-                        Image(systemName: "flame.circle.fill")
-                            .foregroundColor(Color.gray)
-                            .font(.system(size: 80, weight: .bold))
-                            .frame(width: 100, height: 120)
+                    HStack {
+                        if viewModel.streakCounter != 0 {
+                            Image(systemName: "flame.circle.fill")
+                                .foregroundColor(Color.pink)
+                                .font(.system(size: 80, weight: .bold))
+                                .frame(width: 100, height: 120)
+                        } else {
+                            Image(systemName: "flame.circle.fill")
+                                .foregroundColor(Color.gray)
+                                .font(.system(size: 80, weight: .bold))
+                                .frame(width: 100, height: 120)
+                        }
+                        
+                        VStack(alignment: .leading) {
+                            Text("Streak Count")
+                                .font(.title)
+                                .bold()
+                            Text("\(viewModel.streakCounter) Day")
+                                .font(.title)
+                                .bold()
+                        }
+                        .padding()
                     }
-                    
-                    VStack(alignment: .leading) {
-                        Text("Streak Count")
-                            .font(.title)
-                            .bold()
-                        Text("\(viewModel.streakCounter) Day")
-                            .font(.title)
-                            .bold()
-                    }
-                    .padding()
-                }
+                
                 
                 VStack {
                     PieChartView(missions: viewModel.missions, completedMissions: viewModel.rewards,viewModel: viewModel)
@@ -62,17 +63,16 @@ struct NotificationView: View {
                                     .font(.subheadline)
                             }
                             Spacer()
-                            ProgressBar(progress: progress)
-                                .frame(width: 150, height: 10)
-                            
-                            if isCompleted {
-                                NavigationLink(destination: MissionCompletionView(missionName: mission.name)) {
-//                                    Image(systemName: "checkmark.circle.fill")
-//                                        .foregroundColor(.green)
+                            ZStack {
+                                ProgressBar(progress: progress)
+                                    .frame(width: 150, height: 10)
+                                
+                                if isCompleted {
+                                    NavigationLink(destination: MissionCompletionView(missionName: mission.name)) {
+                                        //                                    Image(systemName: "checkmark.circle.fill")
+                                        //                                        .foregroundColor(.green)
+                                    }
                                 }
-                            } else {
-                                Image(systemName: "hourglass")
-                                    .foregroundColor(.gray)
                             }
                         }
                         .padding(.vertical)

@@ -231,7 +231,6 @@ struct ItemDetailView: View {
                 
                 Section(header: Text("Dates")) {
                     DatePicker("Received Date", selection: $receivedDate, displayedComponents: .date)
-                    DatePicker("Expiry Date", selection: $expiryDate, displayedComponents: .date)
                 }
                 
                 Section(header: Text("Preview")) {
@@ -260,7 +259,6 @@ struct ItemDetailView: View {
                                 in: placeIndex,
                                 name: inputName,
                                 receivedDate: receivedDate,
-                                expiryDate: expiryDate,
                                 imageData: imageData
                             )
                             

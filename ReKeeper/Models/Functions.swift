@@ -25,9 +25,9 @@ class StorageViewModel: ObservableObject {
     ]
     
     @Published var missions: [Mission] = [
-        Mission(name: "First 5 Items", goal: 5, reward: "Bronze Badge"),
-        Mission(name: "First 10 Items", goal: 10, reward: "Silver Badge"),
-        Mission(name: "First 20 Items", goal: 20, reward: "Gold Badge")
+        Mission(name: "Add 5 Items Mission", goal: 5, reward: "Bronze Badge"),
+        Mission(name: "Add 10 Items Mission", goal: 10, reward: "Silver Badge"),
+        Mission(name: "Add 20 Items Mission", goal: 20, reward: "Gold Badge")
     ]
     
     @Published var streakCounter: Int = 0
@@ -124,10 +124,10 @@ class StorageViewModel: ObservableObject {
         saveData()
     }
     
-    func addItem(to categoryIndex: Int, in placeIndex: Int, name: String, receivedDate: Date, expiryDate: Date, imageData: Data?) {
-        let newItem = Item(name: name, receivedDate: receivedDate, expiryDate: expiryDate, imageData: imageData)
+    func addItem(to categoryIndex: Int, in placeIndex: Int, name: String, receivedDate: Date,imageData: Data?) {
+        let newItem = Item(name: name, receivedDate: receivedDate, imageData: imageData)
         places[placeIndex].categories[categoryIndex].items.append(newItem)
-
+        
         updateStreak()
         checkMissions()
         saveData()
