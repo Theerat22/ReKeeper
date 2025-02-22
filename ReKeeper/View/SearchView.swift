@@ -26,12 +26,12 @@ struct SearchView: View {
         NavigationView {
             VStack {
                 TextField("Search item...", text: $searchText)
-//                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding()
                 
                 if searchText.isEmpty {
-//                    Text("Enter item name to search")
-//                        .foregroundColor(.gray)
+                    Text("Enter item name to search")
+                        .foregroundColor(.gray)
                 } else if filteredResults.isEmpty {
                     Text("Not Found")
                         .foregroundColor(.red)

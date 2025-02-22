@@ -11,15 +11,13 @@ import PhotosUI
 struct ItemGridView: View {
     var placeIndex: Int
     var categoryIndex: Int
-    
-    @Environment(\.dismiss) var dismiss
-    
+        
     @State private var isShowingPhotoPicker = false
     @State private var isAddPlaceSheetPresented: Bool = false
     @State private var selectedItem: Item?
     @State private var isShowingDeleteAlert = false
     @State private var itemToDelete: Item?
-    
+        
     @State private var inputImage: UIImage?
     @State private var newItemName = ""
     
@@ -115,6 +113,8 @@ struct ItemView: View {
     var placeIndex: Int
     var categoryIndex: Int
     
+    @Environment(\.dismiss) var dismiss
+
     init(item: Item, viewModel: StorageViewModel, placeIndex: Int, categoryIndex: Int) {
         self.item = item
         self.viewModel = viewModel
@@ -126,6 +126,14 @@ struct ItemView: View {
     var body: some View {
         VStack {
             HStack {
+                Button(action: {
+                    removeItem()
+                }) {
+                    Image(systemName: "trash")
+                        .foregroundColor(.red)
+//                        .padding()
+                        .font(.system(size: 20))
+                }
                 Spacer()
                 Button(action: {
                     if isEditing {
@@ -133,9 +141,10 @@ struct ItemView: View {
                     }
                     isEditing.toggle()
                 }) {
-                    Image(systemName: isEditing ? "checkmark" : "pencil")
+                    Image(systemName: isEditing ? "checkmark" : "square.and.pencil")
                         .foregroundColor(.blue)
-                        .padding()
+//                        .padding()
+                        .font(.system(size: 20))
                 }
             }
             
@@ -179,15 +188,14 @@ struct ItemView: View {
             viewModel.saveData()
         }
     }
-    
-//    func updateItemName() {
-//        if let itemIndex = viewModel.places[placeIndex].categories[categoryIndex].items.firstIndex(where: { $0.id == item.id }) {
-//            viewModel.objectWillChange.send()
-//            viewModel.places[placeIndex].categories[categoryIndex].items[itemIndex].name = editedName
-//            
-//        }
-//    }
-}
+    func removeItem() {
+        if let itemIndex = viewModel.places[placeIndex].categories[categoryIndex].items.firstIndex(where: { $0.id == item.id }) {
+            viewModel.objectWillChange.send()
+            viewModel.places[placeIndex].categories[categoryIndex].items.remove(at: itemIndex)
+            viewModel.saveData()
+            dismiss()
+        }
+    }}
 
 private let itemFormatter: DateFormatter = {
     let formatter = DateFormatter()
@@ -217,4 +225,7 @@ struct AddButton: View {
             }
         }
     }
+}
+#Preview {
+    ItemGridView(placeIndex: 0, categoryIndex: 0, viewModel: StorageViewModel())
 }

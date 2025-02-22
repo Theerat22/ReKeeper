@@ -17,36 +17,8 @@ struct NotificationView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                    HStack {
-                        if viewModel.streakCounter != 0 {
-                            Image(systemName: "flame.circle.fill")
-                                .foregroundColor(Color.pink)
-                                .font(.system(size: 80, weight: .bold))
-                                .frame(width: 100, height: 120)
-                        } else {
-                            Image(systemName: "flame.circle.fill")
-                                .foregroundColor(Color.gray)
-                                .font(.system(size: 80, weight: .bold))
-                                .frame(width: 100, height: 120)
-                        }
-                        
-                        VStack(alignment: .leading) {
-                            Text("Streak Count")
-                                .font(.title)
-                                .bold()
-                            Text("\(viewModel.streakCounter) Day")
-                                .font(.title)
-                                .bold()
-                        }
-                        .padding()
-                    }
-                
-                
-                VStack {
-                    PieChartView(missions: viewModel.missions, completedMissions: viewModel.rewards,viewModel: viewModel)
-                        .frame(height: 200)
-                        .padding()
-                }
+                streakCount
+                pieChart
                 
                 List {
                     ForEach(viewModel.missions.sorted { $0.goal < $1.goal }) { mission in
@@ -89,6 +61,41 @@ struct NotificationView: View {
                 }
             }
         }
+    }
+    
+    private var streakCount: some View {
+        GroupBox {
+            HStack {
+                if viewModel.streakCounter != 0 {
+                    Image(systemName: "flame.circle.fill")
+                        .foregroundColor(Color.pink)
+                        .font(.system(size: 80, weight: .bold))
+                        .frame(width: 100, height: 120)
+                } else {
+                    Image(systemName: "flame.circle.fill")
+                        .foregroundColor(Color.gray)
+                        .font(.system(size: 80, weight: .bold))
+                        .frame(width: 100, height: 120)
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("Streak Count")
+                        .font(.title)
+                        .bold()
+                    Text("\(viewModel.streakCounter) Day")
+                        .font(.title)
+                        .bold()
+                }
+                .padding()
+            }
+        }
+    }
+    
+    private var pieChart: some View {
+        PieChartView(missions: viewModel.missions, completedMissions: viewModel.rewards,viewModel: viewModel)
+            .frame(height: 200)
+            .padding(35)
+        
     }
 }
 

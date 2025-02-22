@@ -74,7 +74,7 @@ struct ContentView: View {
                                 .foregroundColor(.pink)
                         }
                         .padding(.top, 20)
-//                        .padding(.trailing, 20)
+                        .padding(.trailing, 20)
                     }
                     
                     Button(action: {

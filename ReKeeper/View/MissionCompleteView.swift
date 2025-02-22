@@ -34,6 +34,10 @@ struct MissionCompletionView: View {
                 .foregroundColor(.white)
                 .font(.title)
                 .bold()
+            
+            Text("Mission")
+                .foregroundColor(.white)
+                .font(.title2)
                 .padding(.bottom, 20)
             
         }

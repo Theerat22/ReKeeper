@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct CategoryView: View {
     var placeIndex: Int
     @ObservedObject var viewModel: StorageViewModel
@@ -16,6 +14,7 @@ struct CategoryView: View {
     
     @State private var showDeleteAlert = false
     @State private var selectedCategoryIndex: Int?
+    @State private var showDeleteIcons = false
     
     let columns = [
         GridItem(.flexible(), spacing: 7),
@@ -28,7 +27,7 @@ struct CategoryView: View {
             LazyVGrid(columns: columns, spacing: 16) {
                 if let categories = getCategories() {
                     ForEach(categories.enumerated().map({ $0 }), id: \.element.id) { (index, category) in
-                        NavigationLink(destination: ItemGridView(placeIndex: placeIndex, categoryIndex: index, viewModel: viewModel)) {
+                        ZStack(alignment: .topTrailing) {
                             VStack {
                                 Image(systemName: category.icon)
                                     .resizable()
@@ -41,12 +40,30 @@ struct CategoryView: View {
                             .frame(width: 100, height: 100)
                             .background(Color(.systemBackground))
                             .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .onLongPressGesture {
+                                DispatchQueue.main.async {
+                                    withAnimation {
+                                        showDeleteIcons.toggle()
+                                    }
+                                }
+                            }
+                            
+                            if showDeleteIcons {
+                                Button(action: {
+                                    selectedCategoryIndex = index
+                                    showDeleteAlert = true
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.red)
+                                        .background(Circle().fill(Color.white))
+                                }
+                                .offset(x: -10, y: 10)
+                            }
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        .onLongPressGesture {
-                            selectedCategoryIndex = index
-                            showDeleteAlert = true
-                        }
+                        .background(
+                            NavigationLink("", destination: ItemGridView(placeIndex: placeIndex, categoryIndex: index, viewModel: viewModel))
+                                .opacity(0)
+                        )
                     }
                     .alert("Delete Category?", isPresented: $showDeleteAlert) {
                         Button("Cancel", role: .cancel) {}
@@ -108,3 +125,6 @@ struct CategoryView: View {
 }
 
 
+#Preview {
+    CategoryView(placeIndex: 0, viewModel: StorageViewModel())
+}

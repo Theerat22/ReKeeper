@@ -15,19 +15,19 @@ class StorageViewModel: ObservableObject {
     @Published var places: [Place] = [
 //        Place(name: "Living Room", icon: "house.fill", categories: [
 //            Category(name: "Shoes", icon: "shoe.fill", items: [
-//                Item(name: "Nike Sneakers", receivedDate: Date().addingTimeInterval(-86400), expiryDate: Date().addingTimeInterval(604800), imageData: nil),
-//                Item(name: "Adidas Running", receivedDate: Date().addingTimeInterval(-43200), expiryDate: Date().addingTimeInterval(1209600), imageData: nil),
-//                Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
-//                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
-//                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil)
+//                Item(name: "Nike Sneakers", receivedDate: Date().addingTimeInterval(-86400), imageData: nil),
+//                Item(name: "Adidas Running", receivedDate: Date().addingTimeInterval(-43200), imageData: nil),
+//                Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), imageData: nil),
+//                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), imageData: nil),
+//                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), imageData: nil)
 //            ])
 //        ])
     ]
     
     @Published var missions: [Mission] = [
-        Mission(name: "Add 5 Items Mission", goal: 5, reward: "Bronze Badge"),
-        Mission(name: "Add 10 Items Mission", goal: 10, reward: "Silver Badge"),
-        Mission(name: "Add 20 Items Mission", goal: 20, reward: "Gold Badge")
+        Mission(name: "Add 5 Items", goal: 5, reward: "Bronze Badge"),
+        Mission(name: "Add 10 Items", goal: 10, reward: "Silver Badge"),
+        Mission(name: "Add 20 Items", goal: 20, reward: "Gold Badge")
     ]
     
     @Published var streakCounter: Int = 0
@@ -131,6 +131,8 @@ class StorageViewModel: ObservableObject {
         updateStreak()
         checkMissions()
         saveData()
+        
+        objectWillChange.send()
     }
     
     func removePlace(at index: Int) {
