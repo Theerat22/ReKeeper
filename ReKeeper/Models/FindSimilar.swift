@@ -17,24 +17,26 @@ struct FindSimilar: View {
     @State private var isImagePickerPresented = false
     @State private var isScanning = false
     @State private var usedModel = false
-    @State private var similarItems: [Item] = []
+    @State private var similarItems: [(item: Item, rank: Int)] = []
+
     
     @Environment(\.dismiss) var dismiss
     
-    var filteredResults: [(item: Item, placeIndex: Int, categoryIndex: Int, itemIndex: Int)] {
-        viewModel.places.enumerated().flatMap { placeIndex, place in
+    var filteredResults: [(item: Item, placeIndex: Int, categoryIndex: Int, itemIndex: Int, rank: Int)] {
+        return viewModel.places.enumerated().flatMap { placeIndex, place in
             place.categories.enumerated().flatMap { categoryIndex, category in
                 category.items.enumerated()
-                    .filter { item in
-                        similarItems.contains { similarItem in
-                            similarItem.id == item.element.id
+                    .compactMap { item in
+                        if let matchedItem = similarItems.first(where: { $0.item.id == item.element.id }) {
+                            return (item: item.element, placeIndex: placeIndex, categoryIndex: categoryIndex, itemIndex: item.offset, rank: matchedItem.rank)
                         }
+                        return nil
                     }
-                    .map { (item: $0.element, placeIndex: placeIndex, categoryIndex: categoryIndex, itemIndex: $0.offset) }
             }
-        }
+        }.sorted { $0.rank < $1.rank }
     }
     
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -122,6 +124,10 @@ struct FindSimilar: View {
                                 viewModel: viewModel)
                         ) {
                             HStack {
+                                Text("#\(result.rank)")
+                                    .font(.headline)
+                                    .foregroundColor(.blue)
+                                
                                 if let imageData = result.item.imageData, let uiImage = UIImage(data: imageData) {
                                     Image(uiImage: uiImage)
                                         .resizable()
@@ -145,6 +151,7 @@ struct FindSimilar: View {
                             }
                         }
                     }
+
                 }
                 else if capturedImage != nil {
                     Text("")

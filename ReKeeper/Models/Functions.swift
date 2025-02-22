@@ -13,21 +13,34 @@ import UIKit
     
 class StorageViewModel: ObservableObject {
     @Published var places: [Place] = [
-            Place(name: "Living Room", icon: "house.fill", categories: [
-                Category(name: "Shoes", icon: "shoe.fill", items: [
-                    Item(name: "Nike Sneakers", receivedDate: Date().addingTimeInterval(-86400), expiryDate: Date().addingTimeInterval(604800), imageData: nil),
-                    Item(name: "Adidas Running", receivedDate: Date().addingTimeInterval(-43200), expiryDate: Date().addingTimeInterval(1209600), imageData: nil),
-                    Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
-                    Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
-                    Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil)
-                ])
-            ])
-        ]
+//        Place(name: "Living Room", icon: "house.fill", categories: [
+//            Category(name: "Shoes", icon: "shoe.fill", items: [
+//                Item(name: "Nike Sneakers", receivedDate: Date().addingTimeInterval(-86400), expiryDate: Date().addingTimeInterval(604800), imageData: nil),
+//                Item(name: "Adidas Running", receivedDate: Date().addingTimeInterval(-43200), expiryDate: Date().addingTimeInterval(1209600), imageData: nil),
+//                Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
+//                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil),
+//                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), expiryDate: Date().addingTimeInterval(1728000), imageData: nil)
+//            ])
+//        ])
+    ]
+    
+    @Published var missions: [Mission] = [
+        Mission(name: "First 5 Items", goal: 5, reward: "Bronze Badge"),
+        Mission(name: "First 10 Items", goal: 10, reward: "Silver Badge"),
+        Mission(name: "First 20 Items", goal: 20, reward: "Gold Badge")
+    ]
+    
+    @Published var streakCounter: Int = 0
+    @Published var lastRecordedDate: Date? = nil
+    @Published var rewards: [String] = []
         
     private let storageKey = "places_storage"
+    private let streakKey = "streak_counter"
+    private let rewardKey = "rewards_storage"
     
     init() {
         loadData()
+        loadStreak()
     }
     
     func saveData() {
@@ -45,7 +58,59 @@ class StorageViewModel: ObservableObject {
             }
         }
     }
+
+//    Streak Functions
+    private func saveStreak() {
+        UserDefaults.standard.set(streakCounter, forKey: streakKey)
+        UserDefaults.standard.set(lastRecordedDate, forKey: "last_recorded_date")
+    }
+    
+    private func saveRewards() {
+        if let encoded = try? JSONEncoder().encode(rewards) {
+            UserDefaults.standard.set(encoded, forKey: rewardKey)
+        }
+    }
+    
         
+    private func loadStreak() {
+        streakCounter = UserDefaults.standard.integer(forKey: streakKey)
+        lastRecordedDate = UserDefaults.standard.object(forKey: "last_recorded_date") as? Date
+        if let savedRewards = UserDefaults.standard.data(forKey: rewardKey),
+           let decodedRewards = try? JSONDecoder().decode([String].self, from: savedRewards) {
+            rewards = decodedRewards
+        }
+    }
+    private func checkMissions() {
+        let totalItems = places.flatMap { $0.categories }.flatMap { $0.items }.count
+        for mission in missions where totalItems >= mission.goal && !rewards.contains(mission.reward) {
+            rewards.append(mission.reward)
+        }
+        saveRewards()
+    }
+        
+    private func updateStreak() {
+        let today = Calendar.current.startOfDay(for: Date())
+
+        if let lastDate = lastRecordedDate, Calendar.current.isDate(lastDate, inSameDayAs: today) {
+            return
+        }
+
+        if let lastDate = lastRecordedDate, Calendar.current.isDate(today, inSameDayAs: lastDate.addingTimeInterval(-86400)) {
+            streakCounter += 1
+        } else {
+            streakCounter = 1
+        }
+
+        lastRecordedDate = today
+
+        if streakCounter == 7 {
+            rewards.append("7-Day Streak Reward")
+        }
+
+        saveStreak()
+    }
+
+//    Normal Function
     func addPlace(name: String, icon: String) {
             let newPlace = Place(name: name, icon: icon, categories: [])
             places.append(newPlace)
@@ -62,6 +127,9 @@ class StorageViewModel: ObservableObject {
     func addItem(to categoryIndex: Int, in placeIndex: Int, name: String, receivedDate: Date, expiryDate: Date, imageData: Data?) {
         let newItem = Item(name: name, receivedDate: receivedDate, expiryDate: expiryDate, imageData: imageData)
         places[placeIndex].categories[categoryIndex].items.append(newItem)
+
+        updateStreak()
+        checkMissions()
         saveData()
     }
     
@@ -86,7 +154,7 @@ class StorageViewModel: ObservableObject {
 }
 
 extension StorageViewModel {
-    func findSimilarItems(image: UIImage) async -> [Item] {
+    func findSimilarItems(image: UIImage) async -> [(item: Item, rank: Int)] {
         guard let imageFeatureVector = await extractFeatureVector(from: image) else {
             print("Error extracting feature vector")
             return []
@@ -107,10 +175,15 @@ extension StorageViewModel {
                 }
             }
         }
-        return matches.sorted { $0.similarity > $1.similarity }
-                      .prefix(3)
-                      .map { $0.item }
+
+        let sortedMatches = matches.sorted { $0.similarity > $1.similarity }
+                                   .prefix(3)
+        
+        return sortedMatches.enumerated().map { (index, match) in
+            (item: match.item, rank: index + 1)
+        }
     }
+    
     private func extractFeatureVector(from image: UIImage) async -> [Float]? {
         guard let cgImage = image.cgImage else { return nil }
         let request = VNGenerateImageFeaturePrintRequest()

@@ -32,3 +32,10 @@ struct Item: Identifiable, Codable {
     var imageData: Data?
 }
 
+struct Mission: Identifiable, Codable {
+    var id = UUID()
+    var name: String
+    var goal: Int
+    var reward: String
+}
+

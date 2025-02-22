@@ -4,7 +4,7 @@
 //
 //  Created by Theeratdolchat Chatchai on 1/2/2568 BE.
 //
-//
+
 import SwiftUI
 
 struct ContentView: View {
@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var isAddPlaceSheetPresented: Bool = false
     @State private var isFindSimilarPresented: Bool = false
     @State private var isSearchPresented: Bool = false
+    @State private var showNotification = false
     
     func deletePlace(at offsets: IndexSet) {
         for index in offsets {
@@ -23,9 +24,8 @@ struct ContentView: View {
         NavigationView {
             VStack {
                 List {
-                    ForEach(viewModel.places.indices, id: \.self) { index in
+                    ForEach(viewModel.places.indices, id: \ .self) { index in
                         NavigationLink(destination: CategoryView(placeIndex: index, viewModel: viewModel)) {
-                            
                             HStack{
                                 Image(systemName: viewModel.places[index].icon)
                                     .foregroundColor(.pink)
@@ -40,10 +40,11 @@ struct ContentView: View {
                     }
                     .onDelete(perform: deletePlace)
                 }
+                .navigationTitle("ReKeeper")
+                
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
                         Button(action: {
-//                            FindSimilar(viewModel: viewModel)
                             isFindSimilarPresented.toggle()
                         }) {
                             Image(systemName:"camera.metering.partial")
@@ -55,55 +56,67 @@ struct ContentView: View {
                             isSearchPresented.toggle()
                         }) {
                             Image(systemName:"magnifyingglass")
-//                                .foregroundColor(.black)
                         }
                     }
                 }
-                .sheet(isPresented: $isFindSimilarPresented) {
-                    FindSimilar()
-                        .cornerRadius(20)
-                }
-                .sheet(isPresented: $isSearchPresented) {
-                    SearchView(viewModel: viewModel)                        .cornerRadius(20)
-                }
-                
-                .navigationTitle("ReKeeper")
-                
+
                 Spacer()
                 
-                Button(action: {
-                    isAddPlaceSheetPresented.toggle()
-                }) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(gradient: Gradient(colors: [Color.pink, Color.purple]),
-                                               startPoint: .topLeading,
-                                               endPoint: .bottomTrailing)
-                            )
-                            .frame(width: 70, height: 70)
-                            .shadow(color: Color.pink.opacity(0.5), radius: 10, x: 0, y: 5)
+                ZStack {
+                    HStack {
+                        Spacer()
                         
-                        Image(systemName: "plus")
-                            .foregroundColor(.white)
-                            .font(.system(size: 30, weight: .bold))
+                        Button(action: {
+                            showNotification.toggle()
+                        }) {
+                            Image(systemName: "bell.fill")
+                                .font(.title)
+                                .foregroundColor(.pink)
+                        }
+                        .padding(.top, 20)
+//                        .padding(.trailing, 20)
                     }
+                    
+                    Button(action: {
+                        isAddPlaceSheetPresented.toggle()
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(gradient: Gradient(colors: [Color.pink, Color.purple]),
+                                                   startPoint: .topLeading,
+                                                   endPoint: .bottomTrailing)
+                                )
+                                .frame(width: 70, height: 70)
+                                .shadow(color: Color.pink.opacity(0.5), radius: 10, x: 0, y: 5)
+                            
+                            Image(systemName: "plus")
+                                .foregroundColor(.white)
+                                .font(.system(size: 30, weight: .bold))
+                        }
+                    }
+                    .padding(.top, 20)
                 }
-                .padding(.top,20)
-                
             }
-            .sheet(isPresented: $isAddPlaceSheetPresented) {
-                AddPlaceView(viewModel: viewModel)
-                    .cornerRadius(20)
-                
-            }
-            
         }
-        
+        .sheet(isPresented: $isFindSimilarPresented) {
+            FindSimilar()
+                .cornerRadius(20)
+        }
+        .sheet(isPresented: $isSearchPresented) {
+            SearchView(viewModel: viewModel)
+                .cornerRadius(20)
+        }
+        .sheet(isPresented: $isAddPlaceSheetPresented) {
+            AddPlaceView(viewModel: viewModel)
+                .cornerRadius(20)
+        }
+        .sheet(isPresented: $showNotification) {
+            NotificationView(viewModel: viewModel)
+        }
     }
 }
 
 #Preview {
     ContentView()
 }
-

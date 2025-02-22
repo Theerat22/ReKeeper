@@ -17,6 +17,8 @@ struct ItemGridView: View {
     @State private var isShowingPhotoPicker = false
     @State private var isAddPlaceSheetPresented: Bool = false
     @State private var selectedItem: Item?
+    @State private var isShowingDeleteAlert = false
+    @State private var itemToDelete: Item?
     
     @State private var inputImage: UIImage?
     @State private var newItemName = ""
@@ -65,6 +67,10 @@ struct ItemGridView: View {
                     .onTapGesture {
                         selectedItem = item
                     }
+                    .onLongPressGesture {
+                        itemToDelete = item
+                        isShowingDeleteAlert = true
+                    }
                 }
             }
             .padding()
@@ -79,11 +85,26 @@ struct ItemGridView: View {
             }
         }
         .navigationTitle(viewModel.places[placeIndex].categories[categoryIndex].name)
+        .alert(isPresented: $isShowingDeleteAlert) {
+            Alert(
+                title: Text("Delete Item"),
+                message: Text("Are you sure you want to delete \(itemToDelete?.name ?? "")?"),
+                primaryButton: .destructive(Text("Delete")) {
+                    if let itemToDelete = itemToDelete,
+                       let itemIndex = viewModel.places[placeIndex].categories[categoryIndex].items.firstIndex(where: { $0.id == itemToDelete.id }) {
+                        viewModel.places[placeIndex].categories[categoryIndex].items.remove(at: itemIndex)
+                        viewModel.saveData()
+                    }
+                },
+                secondaryButton: .cancel()
+            )
+        }
         
         Spacer()
         AddButton(isPresented: $isAddPlaceSheetPresented)
     }
 }
+
 
 struct ItemView: View {
     @State private var isEditing = false
