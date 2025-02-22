@@ -31,10 +31,10 @@ struct NotificationView: View {
                     }
                     
                     VStack(alignment: .leading) {
-                        Text("Streak Counter:")
+                        Text("Streak Count")
                             .font(.title)
                             .bold()
-                        Text("\(viewModel.streakCounter)")
+                        Text("\(viewModel.streakCounter) Day")
                             .font(.title)
                             .bold()
                     }
@@ -66,8 +66,10 @@ struct NotificationView: View {
                                 .frame(width: 150, height: 10)
                             
                             if isCompleted {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.green)
+                                NavigationLink(destination: MissionCompletionView(missionName: mission.name)) {
+//                                    Image(systemName: "checkmark.circle.fill")
+//                                        .foregroundColor(.green)
+                                }
                             } else {
                                 Image(systemName: "hourglass")
                                     .foregroundColor(.gray)
@@ -149,7 +151,7 @@ struct PieChartView: View {
                     Text("Current Mission:")
                         .bold()
                     Text("\(currentMission.name)")
-                        .foregroundColor(Color.green)
+                        .foregroundColor(Color.primary)
                         .bold()
                 }
                 .padding(.top, 10)
