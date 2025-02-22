@@ -15,6 +15,7 @@ struct CategoryView: View {
     @State private var showDeleteAlert = false
     @State private var selectedCategoryIndex: Int?
     @State private var showDeleteIcons = false
+    @State private var isEditing = false
     
     let columns = [
         GridItem(.flexible(), spacing: 7),
@@ -26,27 +27,23 @@ struct CategoryView: View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 16) {
                 if let categories = getCategories() {
-                    ForEach(categories.enumerated().map({ $0 }), id: \.element.id) { (index, category) in
+                    ForEach(Array(categories.enumerated()), id: \.element.id) { (index, category) in
                         ZStack(alignment: .topTrailing) {
-                            VStack {
-                                Image(systemName: category.icon)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .foregroundColor(.pink)
-                                    .frame(width: 40, height: 40)
-                                Text(category.name)
-                                    .foregroundColor(.primary)
-                            }
-                            .frame(width: 100, height: 100)
-                            .background(Color(.systemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .onLongPressGesture {
-                                DispatchQueue.main.async {
-                                    withAnimation {
-                                        showDeleteIcons.toggle()
-                                    }
+                            NavigationLink(destination: ItemGridView(placeIndex: placeIndex, categoryIndex: index, viewModel: viewModel)) {
+                                VStack {
+                                    Image(systemName: category.icon)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .foregroundColor(.pink)
+                                        .frame(width: 40, height: 40)
+                                    Text(category.name)
+                                        .foregroundColor(.primary)
                                 }
+                                .frame(width: 100, height: 100)
+                                .background(Color(.systemBackground))
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
                             }
+                            .buttonStyle(PlainButtonStyle())
                             
                             if showDeleteIcons {
                                 Button(action: {
@@ -60,10 +57,6 @@ struct CategoryView: View {
                                 .offset(x: -10, y: 10)
                             }
                         }
-                        .background(
-                            NavigationLink("", destination: ItemGridView(placeIndex: placeIndex, categoryIndex: index, viewModel: viewModel))
-                                .opacity(0)
-                        )
                     }
                     .alert("Delete Category?", isPresented: $showDeleteAlert) {
                         Button("Cancel", role: .cancel) {}
@@ -71,6 +64,7 @@ struct CategoryView: View {
                             if let index = selectedCategoryIndex {
                                 withAnimation {
                                     viewModel.removeCategory(from: placeIndex, at: index)
+                                    selectedCategoryIndex = nil
                                 }
                             }
                         }
@@ -87,7 +81,15 @@ struct CategoryView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle(getPlaceName())
-        
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showDeleteIcons.toggle()
+                }) {
+                    Image(systemName: showDeleteIcons ? "checkmark" : "square.and.pencil")
+                }
+            }
+        }
         Button(action: {
             isAddPlaceSheetPresented.toggle()
         }) {
@@ -124,7 +126,8 @@ struct CategoryView: View {
     }
 }
 
-
 #Preview {
-    CategoryView(placeIndex: 0, viewModel: StorageViewModel())
+    CategoryView(placeIndex: 1, viewModel: StorageViewModel())
 }
+
+
