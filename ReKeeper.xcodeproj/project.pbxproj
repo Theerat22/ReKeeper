@@ -6,10 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		34BFC3062D68C9B60016C0B9 /* MobileNetV2.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34BFC2EE2D68C9B60016C0B9 /* MobileNetV2.mlmodel */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		3482D4282D4E0C410050E72C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -31,7 +27,6 @@
 		3482D4172D4E0C3E0050E72C /* ReKeeper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ReKeeper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3482D4272D4E0C410050E72C /* ReKeeperTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReKeeperTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3482D4312D4E0C410050E72C /* ReKeeperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReKeeperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		34BFC2EE2D68C9B60016C0B9 /* MobileNetV2.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MobileNetV2.mlmodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -97,7 +92,6 @@
 				3482D42A2D4E0C410050E72C /* ReKeeperTests */,
 				3482D4342D4E0C410050E72C /* ReKeeperUITests */,
 				3482D4182D4E0C3E0050E72C /* Products */,
-				34BFC2EE2D68C9B60016C0B9 /* MobileNetV2.mlmodel */,
 			);
 			sourceTree = "<group>";
 		};
@@ -255,7 +249,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				34BFC3062D68C9B60016C0B9 /* MobileNetV2.mlmodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

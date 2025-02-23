@@ -12,26 +12,7 @@ import Vision
 import UIKit
     
 class StorageViewModel: ObservableObject {
-    @Published var places: [Place] = [
-//        Place(name: "Living Room", icon: "house.fill", categories: [
-//            Category(name: "Shoes", icon: "shoe.fill", items: [
-//                Item(name: "Nike Sneakers", receivedDate: Date().addingTimeInterval(-86400), imageData: nil),
-//                Item(name: "Adidas Running", receivedDate: Date().addingTimeInterval(-43200), imageData: nil),
-//                Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), imageData: nil),
-//                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), imageData: nil),
-//                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), imageData: nil)
-//            ])
-//        ]),
-//        Place(name: "Living Room", icon: "house.fill", categories: [
-//            Category(name: "Shoes", icon: "shoe.fill", items: [
-//                Item(name: "Nike Sneakers", receivedDate: Date().addingTimeInterval(-86400), imageData: nil),
-//                Item(name: "Adidas Running", receivedDate: Date().addingTimeInterval(-43200), imageData: nil),
-//                Item(name: "Puma Sandals", receivedDate: Date().addingTimeInterval(-259200), imageData: nil),
-//                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), imageData: nil),
-//                Item(name: "Fatty Grace", receivedDate: Date().addingTimeInterval(-259200), imageData: nil)
-//            ])
-//        ])
-    ]
+    @Published var places: [Place] = []
     
     @Published var missions: [Mission] = [
         Mission(name: "Add 5 Items", goal: 5, reward: "Bronze Badge"),
