@@ -66,11 +66,11 @@ ReKeeper is designed to be **compatible with iPhone 16** for smooth and efficien
 
 ---
 
-![App Logo](path/to/logo.png)  
+![App Logo](img/ReKeeper.png)  
 
 ### 📸 Screenshots  
-| Collection Page | Mission & Streak | Image Search |  
+| Collection Page | Image Search | Mission & Streak |  
 |-------------|------------|--------------|  
-| ![Collection](path/to/home.png) | ![Mission&Streak](path/to/text_search.png) | ![ImageSearch](path/to/image_search.png) |  
+| ![Collection](img/IMG_0342.PNG) | ![ImageSearch](img/IMG_0343.PNG)) | ![Mission&Streak](img/IMG_0345.PNG) |  
 
 ---
