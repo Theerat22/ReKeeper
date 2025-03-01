@@ -66,8 +66,6 @@ ReKeeper is designed to be **compatible with iPhone 16** for smooth and efficien
 
 ---
 
-![App Logo](img/ReKeeper.png)  
-
 ### 📸 Screenshots  
 | Collection Page | Image Search | Mission & Streak |  
 |-------------|------------|--------------|  
